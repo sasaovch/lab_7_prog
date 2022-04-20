@@ -1,0 +1,27 @@
+CREATE TABLE SpaceMarine (
+id SERIAL PRIMARY KEY,
+name VARCHAR(50) NOT NULL,
+Coordinates double precision NOT NULL,
+creationDateTime timestamp NOT NULL,
+health INT CHECK(health>0),
+heartCount INT CHECK(heartCount > 0),
+loyal BOOLEAN,
+AstartesCategory astartescategory NOT NULL,
+Chapter VARCHAR(50),
+CHECK(heartCount <= 3),
+FOREIGN KEY(Coordinates) REFERENCES coordinates(x),
+FOREIGN KEY(Chapter) REFERENCES chapter(name));
+
+create table spacemarine (
+id serial primary key,
+name varchar(50) not null,
+coordinates int not null,
+creatindatetime timestamp not null,
+health int check (health>0),
+heartcount int check (heartcount>0),
+loyal boolean,
+astartescategory astartescategory not null,
+chapter varchar(50),
+check(heartcount<=3),
+foreign key (coordinates) references coordinates(id),
+foreign key (chapter) references chapter(name));
