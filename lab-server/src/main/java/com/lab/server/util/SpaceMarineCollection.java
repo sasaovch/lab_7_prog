@@ -16,7 +16,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.lab.common.data.SpaceMarine;
-import com.lab.common.exception.IncorrectData;
 import com.lab.common.util.CollectionManager;
 
 
@@ -38,23 +37,19 @@ public class SpaceMarineCollection implements CollectionManager {
     }
 
     public boolean addElement(SpaceMarine element) {
-        try {
-            if (Objects.equals(element.getID(), null)) {
-                if (usedID.isEmpty()) {
-                    element.setID(1L);
-                    usedID.add(1L);
-                } else {
-                    element.setID(usedID.last() + 1);
-                    usedID.add(usedID.last() + 1);
-                }
-            } else if (usedID.contains(element.getID())) {
+        if (Objects.equals(element.getID(), null)) {
+            if (usedID.isEmpty()) {
+                element.setID(1L);
+                usedID.add(1L);
+            } else {
                 element.setID(usedID.last() + 1);
                 usedID.add(usedID.last() + 1);
-            } else {
-                usedID.add(element.getID());
             }
-        } catch (IncorrectData e) {
-            e.printStackTrace(); // never throw
+        } else if (usedID.contains(element.getID())) {
+            element.setID(usedID.last() + 1);
+            usedID.add(usedID.last() + 1);
+        } else {
+            usedID.add(element.getID());
         }
         return spaceMarineSet.add(element);
     }
@@ -70,6 +65,10 @@ public class SpaceMarineCollection implements CollectionManager {
                 return false;
             }
         }
+    }
+
+    public SpaceMarine getMinElement() {
+        return spaceMarineSet.stream().min((o1, o2) -> o1.compareTo(o2)).orElse(new SpaceMarine());
     }
 
     public boolean removeElement(SpaceMarine element) {
@@ -103,9 +102,10 @@ public class SpaceMarineCollection implements CollectionManager {
         return usedID.last();
     }
 
-    public void clearCollection() {
+    public boolean clearCollection() {
         usedID.clear();
         spaceMarineSet.clear();
+        return true;
     }
 
     public ArrayList<SpaceMarine> sortCollection() {
@@ -129,16 +129,25 @@ public class SpaceMarineCollection implements CollectionManager {
         return (SpaceMarine) spaceMarineSet.stream().filter((spMar) -> id.equals(spMar.getID())).findFirst().orElse(null);
     }
 
-    public boolean updateSpaceMarine(SpaceMarine changeMarine, SpaceMarine newMarine) {
-        try {
-            newMarine.setID(changeMarine.getID());
-        } catch (IncorrectData e) {
-            e.printStackTrace();
-        }
-        return removeElement(changeMarine) && addElement(newMarine);
+    public boolean updateSpaceMarine(SpaceMarine newMarine, Long id) {
+        newMarine.setID(id);
+        return removeElement(findByID(id)) && addElement(newMarine);
     }
 
     public List<SpaceMarine> sortByCoordinates() {
         return spaceMarineSet.stream().sorted(Comparator.comparing(SpaceMarine::getCoordinates)).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean removeById(Long id) {
+        return spaceMarineSet.removeIf(spaceMarine -> spaceMarine.getID().equals(id));
+    }
+
+    public boolean checkContains(SpaceMarine spMar) {
+        return spaceMarineSet.contains(spMar);
+    }
+
+    public Set<SpaceMarine> getSpMarIf(Predicate<SpaceMarine> predicate) {
+        return spaceMarineSet.stream().filter(predicate).collect(Collectors.toSet());
     }
 }

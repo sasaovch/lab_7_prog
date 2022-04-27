@@ -1,14 +1,16 @@
 package com.lab.common.commands;
 
-import com.lab.common.data.SpaceMarine;
-import com.lab.common.util.CollectionManager;
+import com.lab.common.util.BodyCommand;
 
 
 public class HelpCommand extends Command {
 
+    public HelpCommand () {
+    }
+
     @Override
-    public CommandResult run(Object data, SpaceMarine spMar, CollectionManager collection) {
-        return new CommandResult("help", "help : print info about all commands\n"
+    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+        return new CommandResult("help", null, true, "help : print info about all commands\n"
         + "info : print info about collection: type, initialization date, number of elements\n"
         + "show : print all elements of collection\n"
         + "add {element} : add new element in collection\n"
@@ -22,6 +24,6 @@ public class HelpCommand extends Command {
         + "group_counting_by_name : groups the elements of the collection by the value of the name field\n"
         + "remove_greater {element} : remove all items from collection that exceed the specified\n"
         + "remove_lower {element} : remove all items smaller than the specified one from the collection\n"
-        + "print_descending : print all the elements of the collection in descending order", true);
+        + "print_descending : print all the elements of the collection in descending order");
     }
 }

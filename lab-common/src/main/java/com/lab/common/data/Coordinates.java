@@ -3,17 +3,20 @@ package com.lab.common.data;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.lab.common.exception.IncorrectData;
 
-
-/**
- * X-Y coordinates of Space Marine.
- */
 public class Coordinates implements Serializable, Comparable<Coordinates> {
+    private static final long serialVersionUID = -6025385286863260340L;
+    private Long id;
     private double x;
     private Long y; //Поле не может быть null
 
-    public Coordinates(double x, Long y) throws IncorrectData {
+    public Coordinates(Long id, double x, Long y) {
+        setX(x);
+        setY(y);
+        setId(id);
+    }
+
+    public Coordinates(double x, Long y) {
         setX(x);
         setY(y);
     }
@@ -21,38 +24,28 @@ public class Coordinates implements Serializable, Comparable<Coordinates> {
     public Coordinates() {
     }
 
-    /**
-     * @return Y-coordinate.
-     */
     public Long getY() {
         return y;
     }
 
-    /**
-     * @return X-coordinate.
-     */
     public double getX() {
         return x;
     }
 
-    /**
-     * Set Y-coordinate.
-     * @param y Y-coordinate.
-     * @throws IncorrectData
-     */
-    public void setY(Long y) throws IncorrectData {
-        if (y == null) {
-            throw new IncorrectData();
-        }
+    public void setY(Long y) {
         this.y = y;
     }
 
-    /**
-     * Set Y-coordinate.
-     * @param x X-coordinate.
-     */
     public void setX(double x) {
         this.x = x;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     @Override

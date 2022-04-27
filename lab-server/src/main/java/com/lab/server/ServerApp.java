@@ -10,38 +10,41 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import com.google.gson.JsonSyntaxException;
 import com.lab.common.commands.Command;
 import com.lab.common.commands.CommandManager;
 import com.lab.common.commands.CommandResult;
-import com.lab.common.data.SpaceMarine;
+import com.lab.common.util.BodyCommand;
 import com.lab.common.util.Message;
-import com.lab.server.util.ParsingJSON;
-import com.lab.server.util.SpaceMarineCollection;
+import com.lab.server.util.SQLSpMarCollManager;
 
 
 public class ServerApp {
-    private SpaceMarineCollection collection;
-    private final CommandManager commands;
+    private CommandManager commands;
+    private SQLSpMarCollManager sqlSpMarCollManager;
+    //private UserManager userManager;
     private final Logger logger;
     private final Scanner scanner;
+    private Connection connectionDB;
     private SocketAddress client;
     private SocketAddress address;
     private DatagramChannel channel;
-    private ParsingJSON pars;
-    private File fileOfApp;
     private boolean isWorkState;
     private SendManager sendManager;
     private ReceiveManager receiveManager;
 
-    public ServerApp(CommandManager commands, InetAddress addr, int port) {
-        this.commands = commands;
-        address = new InetSocketAddress(addr, port);
+    public ServerApp(InetAddress addr, int port, Connection connDB) throws NumberFormatException, SQLException, IOException {
+        this.address = new InetSocketAddress(addr, port);
+        this.connectionDB = connDB;
+        sqlSpMarCollManager = new SQLSpMarCollManager(connectionDB);
+        commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager);
     }
 
     {
@@ -50,21 +53,22 @@ public class ServerApp {
         scanner = new Scanner(System.in);
     }
 
-    public void start(String filename) throws IOException, ClassNotFoundException, InterruptedException {
+    public void start() throws IOException, ClassNotFoundException, InterruptedException, NumberFormatException, SQLException, NoSuchAlgorithmException {
         try (DatagramChannel datachannel = DatagramChannel.open()) {
             this.channel = datachannel;
             logger.info("Open datagram channel. Server started working.");
-            parsing(filename);
+            logger.info("The collection has been created.");
+            //think about exception
             sendManager = new SendManager(channel, client, logger);
             receiveManager = new ReceiveManager(channel, client, logger);
-            channel.configureBlocking(false);
             try {
-                logger.info(channel.getLocalAddress().toString());
                 channel.bind(address);
-            } catch (BindException e) {
+                logger.info(channel.getLocalAddress().toString());
+            } catch (BindException z) {
                 logger.info("Cannot assign requested address.");
                 isWorkState = false;
             }
+            channel.configureBlocking(false);
             Message mess;
             CommandResult result;
             while (isWorkState) {
@@ -75,7 +79,7 @@ public class ServerApp {
                 } else if ("error".equals(mess.getCommand())) {
                     logger.info("Something with data went wrong.");
                     sendManager.setClient(receiveManager.getClient());
-                    sendManager.sendCommResult(new CommandResult("error", "Something with data went wrong. Try again.", false));
+                    sendManager.sendCommResult(new CommandResult("error", null, false, "Something with data went wrong. Try again."));
                     continue;
                 }
                 if (mess.getCommand().equals("exit")) {
@@ -89,11 +93,10 @@ public class ServerApp {
         }
     }
 
-    public CommandResult execute(Message mess) {
+    public CommandResult execute(Message mess) throws SQLException {
         Command command = commands.getMap().get(mess.getCommand());
-        Object data = mess.getData();
-        SpaceMarine spMar = mess.getSpacMar();
-        return command.run(data, spMar, collection);
+        BodyCommand data = mess.getBodyCommand();
+        return command.run(data, null);
     }
 
     public String readfile(File file) throws FileNotFoundException, IOException {
@@ -119,37 +122,10 @@ public class ServerApp {
             } catch (NoSuchElementException e) {
                 line = "exit";
             }
-            if ("save".equals(line)) {
-                try {
-                    if (pars.serialize(collection, fileOfApp)) {
-                        logger.info("The collection has been saved");
-                    } else {
-                        logger.info("The collection hasn't been saved.");
-                    }
-                } catch (FileNotFoundException | NullPointerException e) {
-                    logger.info("File isn't exist or invalid user rights.");
-                }
-            }
             if ("exit".equals(line)) {
                 logger.info("Server finished working");
                 isWorkState = false;
             }
-        }
-    }
-
-    public void parsing(String filename) throws JsonSyntaxException, FileNotFoundException, IOException {
-        logger.info("Creating collection.");
-        try {
-            pars = new ParsingJSON();
-            fileOfApp = new File(filename);
-            String fileline = readfile(fileOfApp);
-            collection = pars.deSerialize(fileline);
-            logger.info("The collection has been created.");
-        } catch (JsonSyntaxException | FileNotFoundException e) {
-            logger.info("Something with parsing went wrong. Check data in file and rights of file.");
-            isWorkState = false;
-            logger.info("Finish work.");
-            return;
         }
     }
 }

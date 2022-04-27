@@ -1,21 +1,47 @@
 package com.lab.common.commands;
 
 import com.lab.common.data.SpaceMarine;
+import com.lab.common.exception.CommandArgumentException;
+import com.lab.common.util.AskerInformation;
+import com.lab.common.util.BodyCommand;
+import com.lab.common.util.BodyCommandWithSpMar;
 import com.lab.common.util.CollectionManager;
+import com.lab.common.util.IOManager;
 
 public class UpdateCommand extends Command {
+    private CollectionManager collectionManager;
+
+    public UpdateCommand() {
+    }
+
+    public UpdateCommand(CollectionManager collection) {
+        collectionManager = collection;
+    }
 
     @Override
-    public CommandResult run(Object data, SpaceMarine spMar, CollectionManager collection) {
-        Long id = (Long) data;
-        if (collection.getSize() == 0) {
-            return new CommandResult("update", "There are no such element in the collection.", false);
+    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+        BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
+        SpaceMarine newSpaceMarine = bodyCommandWithSpMar.getSpaceMarine();
+        Long id = (Long) bodyCommand.getData();
+        if (collectionManager.getSize() == 0) {
+            return new CommandResult("update", null, false, "There are no such element in the collection.");
         }
-        SpaceMarine changeMarine = collection.findByID(id);
-        if (changeMarine == null) {
-            return new CommandResult("update", "Id is not correct.", false);
+        if (collectionManager.updateSpaceMarine(newSpaceMarine, id)) {
+            return new CommandResult("update", null, true, "Marine has been successfully updated.");
+        } else {
+            return new CommandResult("update", null, false, "Id is not correct.");
         }
-        collection.updateSpaceMarine(changeMarine, spMar);
-        return new CommandResult("update", "Marine has been successfully updated.", true);
+    }
+
+    @Override
+    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws CommandArgumentException {
+        if (args.length != 1) {
+            throw new CommandArgumentException();
+        }
+        try {
+            return new BodyCommandWithSpMar(Long.parseLong(args[0]), AskerInformation.askMarine(ioManager));
+        } catch (NumberFormatException e) {
+            throw new CommandArgumentException();
+        }
     }
 }

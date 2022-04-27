@@ -2,35 +2,43 @@ package com.lab.common.util;
 
 import java.io.Serializable;
 
-import com.lab.common.data.Client;
-import com.lab.common.data.SpaceMarine;
+import com.lab.common.data.User;
 
 public class Message implements Serializable {
-    private final Client client;
-    private final String command;
-    private final Object data;
-    private final SpaceMarine spMar;
+    private static final long serialVersionUID = 2584413675131251528L;
+    private User client;
+    private String nameCommand;
+    private BodyCommand bodyCommand;
 
-    public Message(Client client, String command, Object data, SpaceMarine spMar) {
-        this.command = command;
-        this.data = data;
-        this.spMar = spMar;
-        this.client = client;
+    public Message(String command, BodyCommand bodyCommand) {
+        this.nameCommand = command;
+        this.bodyCommand = bodyCommand;
     }
 
     public String getCommand() {
-        return command;
+        return nameCommand;
     }
 
-    public Object getData() {
-        return data;
+    public BodyCommand getBodyCommand() {
+        return bodyCommand;
     }
 
-    public SpaceMarine getSpacMar() {
-        return spMar;
-    }
-
-    public Client getClient() {
+    public User getClient() {
         return client;
+    }
+
+    public void setClient(User client) {
+        this.client = client;
+    }
+
+    public void setBodyCommand(BodyCommand bodyCommand) {
+        this.bodyCommand = bodyCommand;
+    }
+
+    public void setCommand(String command) {
+        this.nameCommand = command;
+    }
+
+    public Message() {
     }
 }

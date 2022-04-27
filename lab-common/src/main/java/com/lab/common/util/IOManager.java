@@ -1,26 +1,34 @@
-package com.lab.client;
+package com.lab.common.util;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Stack;
 
 public class IOManager {
     private BufferedReader reader;
     private PrintWriter writer;
-    private final String prompter;
+    private String prompter;
     private Boolean fileMode = false;
     private final Stack<BufferedReader> previosReaders = new Stack<>();
     private final Stack<File> currentFiles = new Stack<>();
 
-    public IOManager(BufferedReader reader, PrintWriter writer, String promter) {
-        this.reader = reader;
-        this.writer = writer;
+    public IOManager() {
+        this(System.in, System.out, "$");
+    }
+
+    public IOManager(InputStream input, OutputStream output, String promter) {
+        this.reader = new BufferedReader(new InputStreamReader(input));
+        this.writer = new PrintWriter(output, true);
         this.prompter = promter;
     }
+
 
     public  void setBufferReader(BufferedReader buf) {
         reader = buf;

@@ -2,16 +2,27 @@ package com.lab.common.commands;
 
 import java.io.Serializable;
 
-import com.lab.common.data.SpaceMarine;
+import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
 public class ShowCommand extends Command {
+    private CollectionManager collectionManager;
+
+    public ShowCommand() {
+    }
+
+    public ShowCommand(CollectionManager collection) {
+        collectionManager = collection;
+    }
+
 
     @Override
-    public CommandResult run(Object data, SpaceMarine spMar, CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return new CommandResult("show", "The collection is empty.", true);
+    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+        if (collectionManager.getSize() == 0) {
+            return new CommandResult("show", null, true, "The collection is empty.");
         }
-        return new CommandResult("show", (Serializable) collection.sortByCoordinates(), true);
+        StringBuilder messagResult = new StringBuilder();
+        collectionManager.sortByCoordinates().stream().forEach(spMar -> messagResult.append(spMar.toString() + "\n"));
+        return new CommandResult("show", (Serializable) collectionManager.sortByCoordinates(), true, messagResult.toString());
     }
 }

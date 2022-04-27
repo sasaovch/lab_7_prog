@@ -58,7 +58,7 @@ public class SendManager {
             }
         }
         sendBuffer.clear();
-        logger.info("Send result of command to client: " + result.getData());
+        logger.info("Send result of command to client: " + "\n-----------------\n" +  result.getMessageResult() + "\n-----------------------");
     }
 
     public void setClient(SocketAddress client) {

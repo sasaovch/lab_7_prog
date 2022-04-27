@@ -3,6 +3,8 @@ package com.lab.common.commands;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.lab.common.util.CollectionManager;
+
 public class CommandManager {
     private final Map<String, Command> commandsMap;
 
@@ -16,5 +18,29 @@ public class CommandManager {
 
     public Map<String, Command> getMap() {
         return commandsMap;
+    }
+
+    public Command getCommand(String name) {
+        return commandsMap.get(name);
+    }
+
+    public static CommandManager getDefaultCommandManager(CollectionManager collMan) {
+        CommandManager cm = new CommandManager();
+        cm.addCommand("help", new HelpCommand());
+        cm.addCommand("info", new InfoCommand(collMan));
+        cm.addCommand("show", new ShowCommand(collMan));
+        cm.addCommand("clear", new ClearCommand(collMan));
+        //cm.addCommand("exit", new ExitCommand());
+        cm.addCommand("group_counting_by_name", new GroupCountingByNameCommand(collMan));
+        cm.addCommand("print_descending", new PrintDescendingCommand(collMan));
+        cm.addCommand("add", new AddCommand(collMan));
+        cm.addCommand("add_if_min", new AddIfMinCommand(collMan));
+        cm.addCommand("remove_greater", new RemoveGreaterCommand(collMan));
+        cm.addCommand("remove_lower", new RemoveLowerCommand(collMan));
+        cm.addCommand("update", new UpdateCommand(collMan));
+        cm.addCommand("remove_by_id", new RemoveByIdCommand(collMan));
+        cm.addCommand("count_by_loyal", new CountByLoyalCommand(collMan));
+        //cm.addCommand("execute_script", new ExecuteCommand());
+        return cm;
     }
 }

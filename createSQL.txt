@@ -1,27 +1,40 @@
 CREATE TABLE SpaceMarine (
 id SERIAL PRIMARY KEY,
 name VARCHAR(50) NOT NULL,
-Coordinates double precision NOT NULL,
-creationDateTime timestamp NOT NULL,
+creating_date_time timestamp NOT NULL,
+Coordinates bigint NOT NULL,
 health INT CHECK(health>0),
-heartCount INT CHECK(heartCount > 0),
+heart_Count INT CHECK(heart_Count > 0),
 loyal BOOLEAN,
-AstartesCategory astartescategory NOT NULL,
-Chapter VARCHAR(50),
-CHECK(heartCount <= 3),
-FOREIGN KEY(Coordinates) REFERENCES coordinates(x),
+Astartes_Category astartes_category NOT NULL,
+Chapter bigint,
+owner_id bigint not null,
+CHECK(heart_Count <= 3),
+FOREIGN KEY(Coordinates) REFERENCES coordinates(id),
 FOREIGN KEY(Chapter) REFERENCES chapter(name));
 
-create table spacemarine (
-id serial primary key,
-name varchar(50) not null,
-coordinates int not null,
-creatindatetime timestamp not null,
-health int check (health>0),
-heartcount int check (heartcount>0),
-loyal boolean,
-astartescategory astartescategory not null,
-chapter varchar(50),
-check(heartcount<=3),
-foreign key (coordinates) references coordinates(id),
-foreign key (chapter) references chapter(name));
+CREATE TYPE AstartesCategory AS ENUM (
+'AGGRESSOR',
+'INCEPTOR',
+'TACTICAL',
+'CHAPLAIN',
+'HELIX');
+
+CREATE TABLE Coordinates (
+id SERIAL PRIMARY KEY,
+x double precision,
+y bigint);
+
+CREATE TABLE Chapter (
+name varchar(50) PRIMARE KEY,
+parent_Legion varchar(50),
+marines_Count bigint NOT NULL CHECK(marines_Count > 0),
+world varchar(50),
+CHECK(marines_Count <=1000));
+
+ALTER TABLE table_name DROP CONSTRAINT constraint_name;
+
+
+('aleks','12','12.01.20','2','2','true','helix','nsd');
+insert into spacemarine (name, coordinates, creatindatetime, health, heartcount, loyal, astartescategory, chapter)
+values ('aleks','12','12.01.20','2','2','true','HELIX','nsd');

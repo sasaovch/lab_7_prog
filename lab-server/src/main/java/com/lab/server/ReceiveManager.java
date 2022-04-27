@@ -49,7 +49,7 @@ public class ReceiveManager {
                 channel.receive(receiveBuffer);
                 receiveMess = deserialize(bufr);
                 mess = (Message) receiveMess;
-                logger.info("Received message: " + mess.getCommand());
+                logger.info("Received message: " +"\n-----------------\n" +  mess.getCommand()+ "\n-----------------------");
             } else {
                 mess = (Message) receiveMess;
             }

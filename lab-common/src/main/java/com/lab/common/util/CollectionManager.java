@@ -14,15 +14,17 @@ import com.lab.common.data.SpaceMarine;
 public interface CollectionManager {
     boolean addElement(SpaceMarine spMar);
     boolean addIfMin(SpaceMarine spMar);
-    void clearCollection();
+    boolean clearCollection();
     <T> int countBySomeThing(Function<SpaceMarine, T> getter, T value);
     int getSize();
     <R> Map<R, List<SpaceMarine>> groupByField(Function<SpaceMarine, R> funct);
     LocalDateTime getTime();
     ArrayList<SpaceMarine> sortCollection();
-    boolean removeIf(Predicate<SpaceMarine> predicate);
+    boolean removeById(Long id);
     HashSet<SpaceMarine> getCollection();
     SpaceMarine findByID(Long id);
-    boolean updateSpaceMarine(SpaceMarine changeSpaceMarine, SpaceMarine oldSpaceMarine);
+    boolean updateSpaceMarine(SpaceMarine newMarine, Long id);
     List<SpaceMarine> sortByCoordinates();
+    SpaceMarine getMinElement();
+    boolean removeIf(Predicate<SpaceMarine> predicate);
 }

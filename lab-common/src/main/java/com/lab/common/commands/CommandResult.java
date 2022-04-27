@@ -3,22 +3,25 @@ package com.lab.common.commands;
 import java.io.Serializable;
 
 public class CommandResult implements Serializable {
+    private static final long serialVersionUID = 8711472321987691021L;
     private Serializable data;
-    private Boolean result;
+    private Boolean resultStatus;
     private String name;
+    private String messageResult;
 
-    public CommandResult(String name, Serializable data, Boolean result) {
+    public CommandResult(String name, Serializable data, Boolean resultStatus, String messageResult) {
         this.setName(name);
-        this.setResult(result);
         this.setData(data);
+        this.setResultStatus(resultStatus);
+        this.setMessageResult(messageResult);
     }
 
-    public Boolean getResult() {
-        return result;
+    public Boolean getResultStatus() {
+        return resultStatus;
     }
 
-    public void setResult(Boolean result) {
-        this.result = result;
+    public void setResultStatus(Boolean result) {
+        this.resultStatus = result;
     }
 
     public Serializable getData() {
@@ -35,5 +38,13 @@ public class CommandResult implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public String getMessageResult() {
+        return messageResult;
+    }
+
+    public void setMessageResult(String messageResult) {
+        this.messageResult = messageResult;
     }
 }

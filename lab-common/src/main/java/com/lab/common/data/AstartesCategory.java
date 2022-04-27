@@ -1,21 +1,28 @@
 package com.lab.common.data;
 
 public enum AstartesCategory {
-    AGGRESSOR,
-    INCEPTOR,
-    TACTICAL,
-    CHAPLAIN,
-    HELIX;
+    AGGRESSOR("aggressor"),
+    INCEPTOR("inceptor"),
+    TACTICAL("tactical"),
+    CHAPLAIN("chaplain"),
+    HELIX("helix");
 
-    /**
-     * Generates a list of enum string values.
-     * @return String with all enum values.
-     */
+    private final String name;
+
+    private AstartesCategory(String name) {
+        this.name = name;
+    }
+
     public static String listOfCategory() {
         String listofCategory = "";
         for (AstartesCategory category : values()) {
             listofCategory += category.name() + ", ";
         }
         return listofCategory.substring(0, listofCategory.length() - 2);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

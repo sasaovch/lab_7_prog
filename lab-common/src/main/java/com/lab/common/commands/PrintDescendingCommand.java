@@ -4,17 +4,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.lab.common.data.SpaceMarine;
+import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
 public class PrintDescendingCommand extends Command {
+    private CollectionManager collectionManager;
+
+    public PrintDescendingCommand() {
+    }
+
+    public PrintDescendingCommand(CollectionManager collection) {
+        collectionManager = collection;
+    }
+
 
     @Override
-    public CommandResult run(Object data, SpaceMarine spMar, CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return new CommandResult("print_descending", "The collection is empty.", true);
+    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+        if (collectionManager.getSize() == 0) {
+            return new CommandResult("print_descending", null, true, "The collection is empty.");
         }
-        ArrayList<SpaceMarine> list = collection.sortCollection();
+        ArrayList<SpaceMarine> list = collectionManager.sortCollection();
         Collections.reverse(list);
-        return new CommandResult("print_descending", list, true);
+        StringBuilder messageResult = new StringBuilder();
+        list.stream().forEach(spMar -> messageResult.append(spMar.toString() + "\n"));
+        return new CommandResult("print_descending", list, true, messageResult.toString());
     }
 }
