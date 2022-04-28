@@ -1,39 +1,56 @@
-// package com.lab.common.commands;
+package com.lab.common.commands;
 
-// import java.io.IOException;
-// import java.sql.Connection;
-// import java.sql.SQLException;
+import java.io.IOException;
+import java.util.Objects;
 
-// import com.lab.common.data.User;
-// import com.lab.common.util.BodyCommand;
-// import com.lab.common.util.CollectionManager;
-// import com.lab.common.util.IOManager;
+import com.lab.common.data.User;
+import com.lab.common.util.BodyCommand;
+import com.lab.common.util.IOManager;
+import com.lab.common.util.UserManagerInt;
 
-// public class LogInCommand extends Command {
+public class LogInCommand extends Command {
+    private UserManagerInt userCollection;
 
-//     @Override
-//     public CommandResult run(BodyCommand bodyCommand, CollectionManager collection, Connection table, Long userID)
-//             throws SQLException {
-//         User newClient = (User) bodyCommand.getData();
-//         if (collection.check(newClient)) {
-//             newClient.getAuthenticationOnServer().setAuntificationStatusTrue();
-//             newClient.setSalt(salt);
-//             return new CommandResult("log in", collection.get, result)
-//         }
-//         return null;
-//     }
+    public LogInCommand(UserManagerInt userColl) {
+        userCollection = userColl;
+    }
 
-//     @Override
-//     public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws IOException {
-//         while (true) {
-//             ioManager.println("Enter username");
-//             ioManager.prompt();
-//             String username = ioManager.readLine().trim();
-//             ioManager.println("Enter password");
-//             ioManager.prompt();
-//             String password = ioManager.readPassword(); //check empty line and spaces at the end
-//             User client = new User(username, password);
-//             return new BodyCommand(client);
-//         }
-//     }
-// }
+    public LogInCommand() {
+    }
+
+    @Override
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
+        User newClient = (User) bodyCommand.getData();
+        if (userCollection.checkIn(newClient)) {
+            if (userCollection.login(newClient)) {
+                newClient.setAuntificationStatusTrue();
+                return new CommandResult("log in", newClient, true, "Login successfully.");
+            }
+            return new CommandResult("log in", null, false, "Failed to log in.");
+        }
+        return new CommandResult("log in", null, false, "Unknown login. Enter another or sign up.");
+    }
+
+    @Override
+    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws IOException {
+        while (true) {// why while true?
+            ioManager.println("Enter username");
+            ioManager.prompt();
+            String username = ioManager.readLine();
+            if (Objects.isNull(username)) {
+                continue;
+            }
+            if (username.trim().equals("")) {
+                continue;
+            }
+            ioManager.println("Enter password");
+            ioManager.prompt();
+            String password = ioManager.readPassword(); //check empty line and spaces at the end
+            if (password.trim().equals("")) {
+                continue;
+            }
+            User client = new User(username.trim(), password);
+            return new BodyCommand(client);
+        }
+    }
+}

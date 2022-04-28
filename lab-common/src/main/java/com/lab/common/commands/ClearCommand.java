@@ -14,7 +14,7 @@ public class ClearCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         if (collectionManager.clearCollection()) {
             return new CommandResult("clear", null, true,"The collection is cleared.");
         }

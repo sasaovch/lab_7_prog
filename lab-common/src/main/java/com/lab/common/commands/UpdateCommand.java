@@ -1,7 +1,6 @@
 package com.lab.common.commands;
 
 import com.lab.common.data.SpaceMarine;
-import com.lab.common.exception.CommandArgumentException;
 import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.BodyCommandWithSpMar;
@@ -19,9 +18,10 @@ public class UpdateCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
         SpaceMarine newSpaceMarine = bodyCommandWithSpMar.getSpaceMarine();
+        newSpaceMarine.setOwnerName(userName);
         Long id = (Long) bodyCommand.getData();
         if (collectionManager.getSize() == 0) {
             return new CommandResult("update", null, false, "There are no such element in the collection.");
@@ -29,19 +29,19 @@ public class UpdateCommand extends Command {
         if (collectionManager.updateSpaceMarine(newSpaceMarine, id)) {
             return new CommandResult("update", null, true, "Marine has been successfully updated.");
         } else {
-            return new CommandResult("update", null, false, "Id is not correct.");
+            return new CommandResult("update", null, false, "Id is not correct or insufficient access rights.");
         }
     }
 
     @Override
-    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws CommandArgumentException {
+    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) {
         if (args.length != 1) {
-            throw new CommandArgumentException();
+            return null;
         }
         try {
             return new BodyCommandWithSpMar(Long.parseLong(args[0]), AskerInformation.askMarine(ioManager));
         } catch (NumberFormatException e) {
-            throw new CommandArgumentException();
+            return null;
         }
     }
 }

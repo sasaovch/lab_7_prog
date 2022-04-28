@@ -1,9 +1,5 @@
 package com.lab.server;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -16,7 +12,8 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.lab.common.commands.Command;
 import com.lab.common.commands.CommandManager;
@@ -24,12 +21,13 @@ import com.lab.common.commands.CommandResult;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.Message;
 import com.lab.server.util.SQLSpMarCollManager;
+import com.lab.server.util.UserManager;
 
 
 public class ServerApp {
     private CommandManager commands;
     private SQLSpMarCollManager sqlSpMarCollManager;
-    //private UserManager userManager;
+    private UserManager userManager;
     private final Logger logger;
     private final Scanner scanner;
     private Connection connectionDB;
@@ -40,16 +38,17 @@ public class ServerApp {
     private SendManager sendManager;
     private ReceiveManager receiveManager;
 
-    public ServerApp(InetAddress addr, int port, Connection connDB) throws NumberFormatException, SQLException, IOException {
+    public ServerApp(InetAddress addr, int port, Connection connDB) throws SQLException {
         this.address = new InetSocketAddress(addr, port);
         this.connectionDB = connDB;
         sqlSpMarCollManager = new SQLSpMarCollManager(connectionDB);
-        commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager);
+        userManager = new UserManager(connectionDB);
+        commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager, userManager);
     }
 
     {
         isWorkState = true;
-        logger = Logger.getLogger("Server");
+        logger = LoggerFactory.getLogger(ServerApp.class);
         scanner = new Scanner(System.in);
     }
 
@@ -57,15 +56,13 @@ public class ServerApp {
         try (DatagramChannel datachannel = DatagramChannel.open()) {
             this.channel = datachannel;
             logger.info("Open datagram channel. Server started working.");
-            logger.info("The collection has been created.");
-            //think about exception
-            sendManager = new SendManager(channel, client, logger);
-            receiveManager = new ReceiveManager(channel, client, logger);
+            sendManager = new SendManager(channel, client);
+            receiveManager = new ReceiveManager(channel, client);
             try {
                 channel.bind(address);
                 logger.info(channel.getLocalAddress().toString());
             } catch (BindException z) {
-                logger.info("Cannot assign requested address.");
+                logger.error("Cannot assign requested address.", z);
                 isWorkState = false;
             }
             channel.configureBlocking(false);
@@ -76,7 +73,8 @@ public class ServerApp {
                 mess = receiveManager.receiveMessage();
                 if (Objects.isNull(mess)) {
                     continue;
-                } else if ("error".equals(mess.getCommand())) {
+                } 
+                else if ("error".equals(mess.getCommand())) {
                     logger.info("Something with data went wrong.");
                     sendManager.setClient(receiveManager.getClient());
                     sendManager.sendCommResult(new CommandResult("error", null, false, "Something with data went wrong. Try again."));
@@ -84,6 +82,7 @@ public class ServerApp {
                 }
                 if (mess.getCommand().equals("exit")) {
                     logger.info("Client disconnected.");
+                    userManager.disconnect(mess.getClient());
                     continue;
                 }
                 result = execute(mess);
@@ -96,22 +95,7 @@ public class ServerApp {
     public CommandResult execute(Message mess) throws SQLException {
         Command command = commands.getMap().get(mess.getCommand());
         BodyCommand data = mess.getBodyCommand();
-        return command.run(data, null);
-    }
-
-    public String readfile(File file) throws FileNotFoundException, IOException {
-        StringBuilder strData = new StringBuilder();
-        String line;
-        if (!file.exists()) {
-            throw new FileNotFoundException();
-        } else {
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-                while ((line = bufferedReader.readLine()) != null) {
-                    strData.append(line);
-                }
-            }
-        }
-        return strData.toString();
+        return command.run(data, mess.getClient().getLogin());
     }
 
     public void checkCommands() throws IOException {
@@ -123,7 +107,7 @@ public class ServerApp {
                 line = "exit";
             }
             if ("exit".equals(line)) {
-                logger.info("Server finished working");
+                logger.info("Server finished working.");
                 isWorkState = false;
             }
         }

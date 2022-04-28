@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.lab.common.util.CollectionManager;
+import com.lab.common.util.UserManagerInt;
 
 public class CommandManager {
     private final Map<String, Command> commandsMap;
@@ -24,13 +25,13 @@ public class CommandManager {
         return commandsMap.get(name);
     }
 
-    public static CommandManager getDefaultCommandManager(CollectionManager collMan) {
+    public static CommandManager getDefaultCommandManager(CollectionManager collMan, UserManagerInt userColl) {
         CommandManager cm = new CommandManager();
         cm.addCommand("help", new HelpCommand());
         cm.addCommand("info", new InfoCommand(collMan));
         cm.addCommand("show", new ShowCommand(collMan));
         cm.addCommand("clear", new ClearCommand(collMan));
-        //cm.addCommand("exit", new ExitCommand());
+        cm.addCommand("exit", new ExitCommand());
         cm.addCommand("group_counting_by_name", new GroupCountingByNameCommand(collMan));
         cm.addCommand("print_descending", new PrintDescendingCommand(collMan));
         cm.addCommand("add", new AddCommand(collMan));
@@ -40,7 +41,9 @@ public class CommandManager {
         cm.addCommand("update", new UpdateCommand(collMan));
         cm.addCommand("remove_by_id", new RemoveByIdCommand(collMan));
         cm.addCommand("count_by_loyal", new CountByLoyalCommand(collMan));
-        //cm.addCommand("execute_script", new ExecuteCommand());
+        cm.addCommand("log in", new LogInCommand(userColl));
+        cm.addCommand("sign up", new SignUpCommand(userColl));
+        cm.addCommand("execute_script", new ExecuteScriptCommand());
         return cm;
     }
 }

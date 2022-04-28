@@ -1,6 +1,5 @@
 package com.lab.common.commands;
 
-import com.lab.common.exception.CommandArgumentException;
 import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.BodyCommandWithSpMar;
@@ -19,10 +18,10 @@ public class RemoveGreaterCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         BodyCommandWithSpMar bodyCommWitSpMar = (BodyCommandWithSpMar) bodyCommand;
         if (collectionManager.removeIf(spaceMar -> {
-            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0);
+            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0) && (spaceMar.getOwnerName().equals(userName));
             })) {
             return new CommandResult("remove_greater", null, true, "All items have been successfully deleted.");
         } else {
@@ -31,9 +30,9 @@ public class RemoveGreaterCommand extends Command {
     }
 
     @Override
-    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws CommandArgumentException {
+    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) {
         if (args.length != 0) {
-            throw new CommandArgumentException();
+            return null;
         }
         return new BodyCommandWithSpMar(null, AskerInformation.askMarine(ioManager));
     }

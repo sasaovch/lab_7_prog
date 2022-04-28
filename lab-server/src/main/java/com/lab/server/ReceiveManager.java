@@ -8,33 +8,37 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Objects;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.lab.common.util.Message;
 
 public class ReceiveManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveManager.class);
     private final int defaultBufferSize = 256;
-    private final int defaultSleepTime = 500;
     private DatagramChannel channel;
     private SocketAddress client;
-    private Logger logger;
 
-    public ReceiveManager(DatagramChannel channel, SocketAddress client, Logger logger) {
+    public ReceiveManager(DatagramChannel channel, SocketAddress client) {
         this.channel = channel;
         this.client = client;
-        this.logger = logger;
     }
 
-    public Serializable deserialize(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        ObjectInputStream is = new ObjectInputStream(in);
-        Serializable mess = (Serializable) is.readObject();
-        in.close();
-        is.close();
-        return mess;
+    public Serializable deserialize(byte[] data) throws IOException {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            ObjectInputStream is = new ObjectInputStream(in);
+            Serializable mess = (Serializable) is.readObject();
+            in.close();
+            is.close();
+            return mess;
+        } catch (ClassNotFoundException e) {
+            return new Message("error", null);
+        }
     }
 
-    public Message receiveMessage() throws IOException, ClassNotFoundException, InterruptedException {
+    public Message receiveMessage() throws IOException {
         byte[] bufReceiveSize = new byte[defaultBufferSize];
         ByteBuffer receiveBufferSize = ByteBuffer.wrap(bufReceiveSize);
         client = channel.receive(receiveBufferSize);
@@ -43,13 +47,12 @@ public class ReceiveManager {
             Serializable receiveMess = deserialize(bufReceiveSize);
             if (receiveMess.getClass().equals(Integer.class)) {
                 int size = (int) receiveMess;
-                Thread.sleep(defaultSleepTime);
                 byte[] bufr = new byte[size];
                 ByteBuffer receiveBuffer = ByteBuffer.wrap(bufr);
                 channel.receive(receiveBuffer);
                 receiveMess = deserialize(bufr);
                 mess = (Message) receiveMess;
-                logger.info("Received message: " +"\n-----------------\n" +  mess.getCommand()+ "\n-----------------------");
+                LOGGER.info("Received message: " +"\n-----------------\n" +  mess.getCommand()+ "\n-----------------------");
             } else {
                 mess = (Message) receiveMess;
             }

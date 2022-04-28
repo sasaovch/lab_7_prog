@@ -25,13 +25,16 @@ public class SendManager {
         this.port = port;
     }
 
-    public void sendMessage(Message mess) throws IOException, ClassNotFoundException, InterruptedException {
+    public void sendMessage(Message mess) throws IOException {
         buff = serialize(mess);
         outPacket = new DatagramPacket(buff, buff.length, address, port);
         buffsize = serialize(buff.length);
         socket.send(new DatagramPacket(serialize(buff.length), buffsize.length, address, port)); //81
         socket.send(outPacket);
-        Thread.sleep(defaultSleepTime);
+        try {
+            Thread.sleep(defaultSleepTime);
+        } catch (InterruptedException e) {
+        }
     }
 
     public byte[] serialize(Serializable mess) throws IOException {

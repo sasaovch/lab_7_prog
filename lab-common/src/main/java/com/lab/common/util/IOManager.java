@@ -15,7 +15,7 @@ public class IOManager {
     private BufferedReader reader;
     private PrintWriter writer;
     private String prompter;
-    private Boolean fileMode = false;
+    private boolean fileMode = false;
     private final Stack<BufferedReader> previosReaders = new Stack<>();
     private final Stack<File> currentFiles = new Stack<>();
 
@@ -28,7 +28,6 @@ public class IOManager {
         this.writer = new PrintWriter(output, true);
         this.prompter = promter;
     }
-
 
     public  void setBufferReader(BufferedReader buf) {
         reader = buf;
@@ -78,7 +77,7 @@ public class IOManager {
         println("Finished to execute script: " + file.getName());
     }
 
-    public Boolean getFileMode() {
+    public boolean getFileMode() {
         return fileMode;
     }
 

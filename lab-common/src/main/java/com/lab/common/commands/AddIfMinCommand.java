@@ -19,8 +19,9 @@ public class AddIfMinCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
+        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(userName);
         if (collectionManager.addIfMin(bodyCommandWithSpMar.getSpaceMarine())) {
             return new CommandResult("add_if_min", null, true, bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added." );
         }

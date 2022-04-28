@@ -19,7 +19,7 @@ public class InfoCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         TreeMap<String, Object> outMap = new TreeMap<>();
         outMap.put("Initialization time", collectionManager.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         outMap.put("Number of Marines", collectionManager.getSize());

@@ -21,7 +21,7 @@ public class ReceiveManager {
         this.socket = socket;
     }
 
-    public CommandResult reciveMessage() throws IOException, ClassNotFoundException {
+    public CommandResult receiveMessage() throws IOException {
         try {
             bufreceive = new byte[defaultSizeBuffer];
             inPacket = new DatagramPacket(bufreceive, defaultSizeBuffer);
@@ -33,6 +33,8 @@ public class ReceiveManager {
             return (CommandResult) deserialize(inPacket.getData());
         } catch (SocketTimeoutException e) {
             return null;
+        } catch (ClassNotFoundException e) {
+            return new CommandResult("error", null, false, "Data is corrupted.");
         }
     }
 

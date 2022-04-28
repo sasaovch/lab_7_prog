@@ -30,36 +30,29 @@ public class SpaceMarineCollection implements CollectionManager {
         usedID = new TreeSet<>();
     }
 
-    public SpaceMarineCollection(HashSet<SpaceMarine> spaceMarineSet) {
-        this.spaceMarineSet = spaceMarineSet;
-        initializationTime = LocalDateTime.now();
-        usedID = new TreeSet<>();
-    }
-
-    public boolean addElement(SpaceMarine element) {
-        if (Objects.equals(element.getID(), null)) {
+    public boolean addElement(SpaceMarine spaceMarine) {
+        if (Objects.isNull(spaceMarine.getID())) {
             if (usedID.isEmpty()) {
-                element.setID(1L);
+                spaceMarine.setID(1L);
                 usedID.add(1L);
             } else {
-                element.setID(usedID.last() + 1);
+                spaceMarine.setID(usedID.last() + 1);
                 usedID.add(usedID.last() + 1);
             }
-        } else if (usedID.contains(element.getID())) {
-            element.setID(usedID.last() + 1);
+        } else if (usedID.contains(spaceMarine.getID())) {
+            spaceMarine.setID(usedID.last() + 1);
             usedID.add(usedID.last() + 1);
         } else {
-            usedID.add(element.getID());
+            usedID.add(spaceMarine.getID());
         }
-        return spaceMarineSet.add(element);
+        return spaceMarineSet.add(spaceMarine);
     }
 
     public boolean addIfMin(SpaceMarine addSpaceMarine) {
         if (spaceMarineSet.size() == 0) {
             return addElement(addSpaceMarine);
         } else {
-            SpaceMarine minSpaceMarine = spaceMarineSet.stream().min((o1, o2) -> o1.compareTo(o2)).orElse(new SpaceMarine());
-            if (addSpaceMarine.compareTo(minSpaceMarine) < 0) {
+            if (addSpaceMarine.compareTo(getMinElement()) < 0) {
                 return addElement(addSpaceMarine);
             } else {
                 return false;
@@ -71,9 +64,9 @@ public class SpaceMarineCollection implements CollectionManager {
         return spaceMarineSet.stream().min((o1, o2) -> o1.compareTo(o2)).orElse(new SpaceMarine());
     }
 
-    public boolean removeElement(SpaceMarine element) {
-        usedID.remove(element.getID());
-        return spaceMarineSet.remove(element);
+    public boolean removeElement(SpaceMarine spaceMarine) {
+        usedID.remove(spaceMarine.getID());
+        return spaceMarineSet.remove(spaceMarine);
     }
 
     public boolean removeIf(Predicate<SpaceMarine> condition) {
@@ -94,10 +87,6 @@ public class SpaceMarineCollection implements CollectionManager {
         return spaceMarineSet.size();
     }
 
-    public HashSet<SpaceMarine> getCollection() {
-        return spaceMarineSet;
-    }
-
     public Long getLastId() {
         return usedID.last();
     }
@@ -109,7 +98,7 @@ public class SpaceMarineCollection implements CollectionManager {
     }
 
     public ArrayList<SpaceMarine> sortCollection() {
-        ArrayList<SpaceMarine> list = new ArrayList<SpaceMarine>(getCollection());
+        ArrayList<SpaceMarine> list = new ArrayList<SpaceMarine>(spaceMarineSet);
         Collections.sort(list);
         return list;
     }
@@ -130,15 +119,16 @@ public class SpaceMarineCollection implements CollectionManager {
     }
 
     public boolean updateSpaceMarine(SpaceMarine newMarine, Long id) {
-        newMarine.setID(id);
-        return removeElement(findByID(id)) && addElement(newMarine);
+        SpaceMarine oldMarine = findByID(id);
+        newMarine.setID(oldMarine.getID());
+        newMarine.setTime(oldMarine.getCreationDateTime());
+        return removeElement(oldMarine) && addElement(newMarine);
     }
 
     public List<SpaceMarine> sortByCoordinates() {
         return spaceMarineSet.stream().sorted(Comparator.comparing(SpaceMarine::getCoordinates)).collect(Collectors.toList());
     }
 
-    @Override
     public boolean removeById(Long id) {
         return spaceMarineSet.removeIf(spaceMarine -> spaceMarine.getID().equals(id));
     }

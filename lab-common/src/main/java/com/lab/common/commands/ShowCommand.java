@@ -17,7 +17,7 @@ public class ShowCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         if (collectionManager.getSize() == 0) {
             return new CommandResult("show", null, true, "The collection is empty.");
         }

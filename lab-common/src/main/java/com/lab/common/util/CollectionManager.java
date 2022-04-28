@@ -2,7 +2,6 @@ package com.lab.common.util;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -21,7 +20,6 @@ public interface CollectionManager {
     LocalDateTime getTime();
     ArrayList<SpaceMarine> sortCollection();
     boolean removeById(Long id);
-    HashSet<SpaceMarine> getCollection();
     SpaceMarine findByID(Long id);
     boolean updateSpaceMarine(SpaceMarine newMarine, Long id);
     List<SpaceMarine> sortByCoordinates();

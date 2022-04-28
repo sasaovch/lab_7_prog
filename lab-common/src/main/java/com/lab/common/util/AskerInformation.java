@@ -139,8 +139,13 @@ public class AskerInformation {
         }
     }
 
-    public static int askTypeOfAuthin(IOManager ioManager) throws IOException, IncorrectDataOfFileException {
-        return asker(Integer::parseInt, (s) -> (s == 0 || s == 1),"Enter '1' for sign in, '2' for sign up", "It's not correct", false, false, ioManager);
+    public static int askTypeOfAuthen(IOManager ioManager) throws IOException {
+        try {
+            return asker(Integer::parseInt, (s) -> (s == 1 || s == 2 || s == 3),"Enter '1' to log in, '2' to sign up, '3' to exit.", "It's not correct", false, false, ioManager);
+        } catch (IncorrectDataOfFileException e) {
+            e.printStackTrace(); // never throw
+            return -1;
+        }
     }
 
     public static <T> T asker(Function<String, T> function,

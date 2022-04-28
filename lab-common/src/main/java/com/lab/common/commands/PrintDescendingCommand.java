@@ -19,7 +19,7 @@ public class PrintDescendingCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         if (collectionManager.getSize() == 0) {
             return new CommandResult("print_descending", null, true, "The collection is empty.");
         }

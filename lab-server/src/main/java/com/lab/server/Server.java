@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.lab.common.util.ParsFromVR;
+import com.lab.common.util.ParsFromEV;
 
 
 public final class Server {
@@ -18,33 +18,39 @@ public final class Server {
         throw new UnsupportedOperationException("This is an utility class and can not be instantiated");
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException, SQLException, NumberFormatException, NoSuchAlgorithmException {
-        InetAddress address = ParsFromVR.getFromVR("address", InetAddress.getLocalHost(), (variable, defaultVar) -> {
-            try {
-                return InetAddress.getByName(variable);
-            } catch (UnknownHostException e) {
-                return defaultVar;
-            }
-        });
-        Integer port = ParsFromVR.getFromVR("port", DEFAULT_PORT, (variable, defaultVar) -> {
-            try {
-                return Integer.parseInt(variable);
-            } catch (NumberFormatException e) {
-                return defaultVar;
-            }
-        });
-        String dataBaseHost = ParsFromVR.getFromVR("dbhost", "localhost", (stringHost, defaultValue) -> stringHost);
-        String dataBaseTable = ParsFromVR.getFromVR("dbhost", "lab", (stringTable, defaultValue) -> stringTable);
-        String dataBaseUser = ParsFromVR.getFromVR("dbuser", "postgres", (stringUser, defaultValue) -> stringUser);
-        String dataBasePassword = ParsFromVR.getFromVR("dbhost", "87740432164", (stringPassword, defaultValue) -> stringPassword);
-        try (Connection connectionDB = DriverManager.getConnection(
-            "jdbc:postgresql://" + dataBaseHost + '/' + dataBaseTable,
-            dataBaseUser,
-            dataBasePassword
-        )) {
-            ServerApp app = new ServerApp(address, port, connectionDB);
-            app.start();
-        } catch (SQLException e) {
+    public static void main(String[] args) throws ClassNotFoundException, InterruptedException, NumberFormatException, NoSuchAlgorithmException {
+        try {
+            InetAddress address = ParsFromEV.getFromEV("address", InetAddress.getLocalHost(), (variable, defaultVar) -> {
+                try {
+                    return InetAddress.getByName(variable);
+                } catch (UnknownHostException e) {
+                    return defaultVar;
+                }
+            });
+            Integer port = ParsFromEV.getFromEV("port", DEFAULT_PORT, (variable, defaultVar) -> {
+                try {
+                    return Integer.parseInt(variable);
+                } catch (NumberFormatException e) {
+                    return defaultVar;
+                }
+            });
+            String dataBaseHost = ParsFromEV.getFromEV("dbhost", "localhost", (stringHost, defaultValue) -> stringHost);
+            String dataBaseTable = ParsFromEV.getFromEV("dbtable", "lab", (stringTable, defaultValue) -> stringTable);
+            String dataBaseUser = ParsFromEV.getFromEV("dbuser", "postgres", (stringUser, defaultValue) -> stringUser);
+            String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "87740432164", (stringPassword, defaultValue) -> stringPassword);
+            try (Connection connectionDB = DriverManager.getConnection(
+                "jdbc:postgresql://" + dataBaseHost + '/' + dataBaseTable,
+                dataBaseUser,
+                dataBasePassword)) {
+                    ServerApp app = new ServerApp(address, port, connectionDB);
+                    app.start();
+                } catch (SQLException e) {
+                    System.out.println("Failed to connect to postresql or another error");
+                    System.out.println("Use environment variables: dbhost, dbtable, dbuser, dbpassword");
+                    e.printStackTrace();
+                }
+        } catch (IOException e) {
+            System.out.println("Uppss...");
             e.printStackTrace();
         }
     }

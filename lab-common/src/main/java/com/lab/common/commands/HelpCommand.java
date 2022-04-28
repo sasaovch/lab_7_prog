@@ -9,7 +9,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         return new CommandResult("help", null, true, "help : print info about all commands\n"
         + "info : print info about collection: type, initialization date, number of elements\n"
         + "show : print all elements of collection\n"

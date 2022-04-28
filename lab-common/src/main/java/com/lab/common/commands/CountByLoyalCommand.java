@@ -1,7 +1,6 @@
 package com.lab.common.commands;
 
 import com.lab.common.data.SpaceMarine;
-import com.lab.common.exception.CommandArgumentException;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 import com.lab.common.util.IOManager;
@@ -17,13 +16,13 @@ public class CountByLoyalCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, Long userID) {
+    public CommandResult run(BodyCommand bodyCommand, String userName) {
         Integer count = collectionManager.countBySomeThing(SpaceMarine::getLoyal, (Boolean) bodyCommand.getData());
         return new CommandResult("count_by_loyal", count, true, "Count by loyal - " + (Boolean) bodyCommand.getData() + ": " + count);
     }
 
     @Override
-    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws CommandArgumentException {
+    public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) {
         if (args.length == 0) {
             return new BodyCommand(null);
         } else if (args.length == 1) {
@@ -31,6 +30,6 @@ public class CountByLoyalCommand extends Command {
                 return new BodyCommand(Boolean.parseBoolean(args[0]));
             }
         }
-        throw new CommandArgumentException();
+        return null;
     }
 }
