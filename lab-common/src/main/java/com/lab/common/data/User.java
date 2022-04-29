@@ -2,7 +2,7 @@ package com.lab.common.data;
 
 import java.io.Serializable;
 
-public class User implements Serializable{
+public class User implements Serializable {
     private static final long serialVersionUID = 6813517110395654951L;
     private String login;
     private String password;
@@ -12,11 +12,6 @@ public class User implements Serializable{
     public User(String login, String password) {
         this.login = login;
         this.password = password;
-    }
-
-    public User(String login, String password, String salt) {
-        this(login, password);
-        this.salt = salt;
     }
 
     public User() {

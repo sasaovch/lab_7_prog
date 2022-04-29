@@ -9,16 +9,15 @@ import java.net.UnknownHostException;
 import com.lab.common.util.IOManager;
 import com.lab.common.util.ParsFromEV;
 
-public final class App {
+public final class Client {
     private  static final Integer DEFAULT_PORT = 8713;
     private  static final Integer DEFAULT_TIME_OUT = 1000;
 
-    private App() {
+    private Client() {
         throw new UnsupportedOperationException("This is an utility class and can not be instantiated");
     }
 
     public static void main(String[] args) {
-        //Thread.sleep(1000);
         try {
             InetAddress address = ParsFromEV.getFromEV("address", InetAddress.getLocalHost(), (variable, defaultVar) -> {
                 try {
@@ -42,9 +41,9 @@ public final class App {
             Console console = new Console(ioManager, receiveManager, sendManager);
             console.run();
         } catch (UnknownHostException | SocketException e) {
-            System.out.println("Error in creating connection");
+            System.out.println("Error in creating connection.");
         } catch (IOException e) {
-            System.out.println("Uppss... Something with input/output went wrong");
+            System.out.println("Uppss... Something with input/output went wrong.");
         }
     }
 }

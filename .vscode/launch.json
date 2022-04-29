@@ -21,7 +21,7 @@
             "type": "java",
             "name": "Launch App",
             "request": "launch",
-            "mainClass": "com.lab.client.App",
+            "mainClass": "com.lab.client.Client",
             "projectName": "lab-client"
         },
         {

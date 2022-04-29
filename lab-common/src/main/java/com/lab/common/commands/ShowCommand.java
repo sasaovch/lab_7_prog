@@ -15,7 +15,6 @@ public class ShowCommand extends Command {
         collectionManager = collection;
     }
 
-
     @Override
     public CommandResult run(BodyCommand bodyCommand, String userName) {
         if (collectionManager.getSize() == 0) {

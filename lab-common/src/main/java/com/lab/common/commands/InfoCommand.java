@@ -17,7 +17,6 @@ public class InfoCommand extends Command {
         collectionManager = collection;
     }
 
-
     @Override
     public CommandResult run(BodyCommand bodyCommand, String userName) {
         TreeMap<String, Object> outMap = new TreeMap<>();

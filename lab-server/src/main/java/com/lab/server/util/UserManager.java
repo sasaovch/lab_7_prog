@@ -11,6 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Base64.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,7 @@ public class UserManager implements UserManagerInt {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserManager.class);
     private static final String PEPPER = "^kiU)#320%,";
-    private HashSet<String> usersLoginSet;
+    private Collection<String> usersLoginSet;
     private final Connection connectionDB;
 
     public UserManager(Connection connectionDB) throws SQLException {
@@ -31,7 +33,7 @@ public class UserManager implements UserManagerInt {
     }
 
     private void deSerialize() throws SQLException {
-        usersLoginSet = new HashSet<>();
+        usersLoginSet = Collections.synchronizedSet(new HashSet<>());
         Statement stat = connectionDB.createStatement();
         ResultSet res = stat.executeQuery("SELECT login FROM users");
         while (res.next()) {
@@ -67,9 +69,9 @@ public class UserManager implements UserManagerInt {
     }
 
     public boolean addElement(User client) {
-        final int saltBytes = 6;
+        final int saltBytes = 7;
         String insertUser = "INSERT INTO users VALUES ("
-                +" ?,?,?) RETURNING login";
+                + " ?,?,?) RETURNING login";
         Encoder encoder = Base64.getEncoder();
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[saltBytes];
@@ -92,7 +94,7 @@ public class UserManager implements UserManagerInt {
             return false;
         }
     }
-    
+
     public void prepareStatUser(PreparedStatement stat, User client) throws SQLException {
         int indexColumn = 1;
         stat.setString(indexColumn++, client.getLogin());

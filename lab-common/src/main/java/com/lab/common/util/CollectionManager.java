@@ -13,7 +13,7 @@ import com.lab.common.data.SpaceMarine;
 public interface CollectionManager {
     boolean addElement(SpaceMarine spMar);
     boolean addIfMin(SpaceMarine spMar);
-    boolean clearCollection();
+    boolean clearCollection(String userName);
     <T> int countBySomeThing(Function<SpaceMarine, T> getter, T value);
     int getSize();
     <R> Map<R, List<SpaceMarine>> groupByField(Function<SpaceMarine, R> funct);

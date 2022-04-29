@@ -24,7 +24,7 @@ public class AddCommand extends Command {
         if (collectionManager.addElement(bodyCommandWithSpMar.getSpaceMarine())) {
         return new CommandResult("add", null, true, bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added.");
         } else {
-            return new CommandResult("add", null, false, 
+            return new CommandResult("add", null, false,
                 bodyCommandWithSpMar.getSpaceMarine().getName() + " already exists" + " or database broke down");
         }
     }

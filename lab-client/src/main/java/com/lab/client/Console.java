@@ -45,7 +45,7 @@ public class Console {
             }
             commandline = (line + " " + " ").split(" ");
             nameCommand = commandline[0];
-            value = Arrays.copyOfRange(commandline, 1, commandline.length);   
+            value = Arrays.copyOfRange(commandline, 1, commandline.length);
             Command command = parsCommand(nameCommand);
             if (Objects.nonNull(command)) {
                 BodyCommand bodyCommand = command.requestBodyCommand(value, ioManager);
@@ -54,7 +54,8 @@ public class Console {
                     message.setBodyCommand(bodyCommand);
                     sendManager.sendMessage(message);
                     checkAndPrintResult(receiveManager.receiveMessage());
-                } else if (!nameCommand.equals("execute_script")){
+                } else if (!"execute_script".equals(nameCommand)) {
+                    // print errors in parsing command
                     ioManager.printerr("Incorrect arguments in command. Enter 'help' to view correct arguments.");
                 }
             }
@@ -65,6 +66,7 @@ public class Console {
         while (true) {
             int askTypeOfAuthen = AskerInformation.askTypeOfAuthen(ioManager);
             BodyCommand bodyCommand;
+            // ask login and password
             if (askTypeOfAuthen == 1) {
                 bodyCommand = commandManager.getCommand("log in").requestBodyCommand(null, ioManager);
                 message = new Message("log in", bodyCommand);
@@ -75,19 +77,22 @@ public class Console {
                 isWorkState = false;
                 return;
             }
-            message.setClient((User)bodyCommand.getData());
+            message.setClient((User) bodyCommand.getData());
             sendManager.sendMessage(message);
-            CommandResult commandResult = receiveManager.receiveMessage(); //what I receive, trobles when server disconnecting
+            CommandResult commandResult = receiveManager.receiveMessage();
             if (Objects.nonNull(commandResult)) {
+                // authentication was successful
                 if (commandResult.getResultStatus()) {
                     client = (User) commandResult.getData();
                     message.setClient(client);
                     ioManager.println("Welcome, " + client.getLogin() + "!");
                     return;
                 }
+                // authentication wasn't successful
                 ioManager.printerr(commandResult.getMessageResult());
                 continue;
             }
+            // no response received
             ioManager.printerr("Failed to connect server.");
         }
     }
@@ -95,34 +100,35 @@ public class Console {
     public Command parsCommand(String name) {
         Command command = commandManager.getCommand(name);
         if (Objects.isNull(command)) {
-            if (!ioManager.getFileMode()) {
-                ioManager.printerr("Unknown commands. Print help for getting info about commands");
-                return null;
-            } else {
+            if (ioManager.getFileMode()) {
                 ioManager.printerr("Unknow command in file.");
                 ioManager.turnOffFileMode();
                 return null;
+            } else {
+                ioManager.printerr("Unknown commands. Print help for getting info about commands");
+                return null;
             }
         }
-        if (name.equals("exit")) {
+        if ("exit".equals(name)) {
             isWorkState = false;
         }
         return command;
     }
 
     public boolean checkEmptyLine(String line) {
+        boolean returnStatement = false;
         if (Objects.isNull(line) && !ioManager.getFileMode()) {
-            return true;
+            returnStatement = true;
         } else if (Objects.isNull(line)) {
             ioManager.turnOffFileMode();
-            return true;
-        } else if ("".equals(line) && !ioManager.getFileMode()) {
-            return true;
-        } else if ("".equals(line)) {
+            returnStatement = true;
+        } else if ("".equals(line.trim()) && !ioManager.getFileMode()) {
+            returnStatement = true;
+        } else if ("".equals(line.trim())) {
             ioManager.turnOffFileMode();
-            return true;
+            returnStatement = true;
         }
-        return false;
+        return returnStatement;
     }
 
     public void checkAndPrintResult(CommandResult result) {

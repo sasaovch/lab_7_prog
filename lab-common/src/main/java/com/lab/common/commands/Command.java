@@ -7,7 +7,7 @@ import java.io.IOException;
 
 
 public abstract class Command {
-    
+
     public abstract CommandResult run(BodyCommand bodyCommand, String userName);
 
     public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws IOException {
@@ -16,4 +16,4 @@ public abstract class Command {
         }
         return new BodyCommand();
     }
-} 
+}

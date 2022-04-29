@@ -33,20 +33,20 @@ public class LogInCommand extends Command {
 
     @Override
     public BodyCommand requestBodyCommand(String[] args, IOManager ioManager) throws IOException {
-        while (true) {// why while true?
+        while (true) {
             ioManager.println("Enter username");
             ioManager.prompt();
             String username = ioManager.readLine();
             if (Objects.isNull(username)) {
                 continue;
             }
-            if (username.trim().equals("")) {
+            if ("".equals(username.trim())) {
                 continue;
             }
             ioManager.println("Enter password");
             ioManager.prompt();
-            String password = ioManager.readPassword(); //check empty line and spaces at the end
-            if (password.trim().equals("")) {
+            String password = ioManager.readPassword();
+            if ("".equals(password.trim())) {
                 continue;
             }
             User client = new User(username.trim(), password);

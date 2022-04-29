@@ -10,10 +10,11 @@ public class BodyCommand implements Serializable {
         this.data = data;
     }
 
+    public BodyCommand() {
+    }
+
     public Object getData() {
         return data;
     }
 
-    public BodyCommand() {
-    }
 }

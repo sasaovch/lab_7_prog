@@ -1,1 +1,25 @@
 show
+add
+ADd
+11111
+11111
+11111
+1
+false
+aggressor
+
+add
+Mim
+90
+90
+90
+2
+true
+helix
+Uo
+Uo
+10
+Ip
+show
+info
+execute_script sc1.txt

@@ -1,4 +1,4 @@
-package com.lab.server;
+package com.lab.server.serverWork;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,6 +13,7 @@ import com.lab.common.util.ParsFromEV;
 
 public final class Server {
     private static final int DEFAULT_PORT = 8713;
+    private static final int DEFAULT_NUMBER_OF_THREADS = 5;
 
     private Server() {
         throw new UnsupportedOperationException("This is an utility class and can not be instantiated");
@@ -27,7 +28,14 @@ public final class Server {
                     return defaultVar;
                 }
             });
-            Integer port = ParsFromEV.getFromEV("port", DEFAULT_PORT, (variable, defaultVar) -> {
+            int port = ParsFromEV.getFromEV("port", DEFAULT_PORT, (variable, defaultVar) -> {
+                try {
+                    return Integer.parseInt(variable);
+                } catch (NumberFormatException e) {
+                    return defaultVar;
+                }
+            });
+            int numberOfTreads = ParsFromEV.getFromEV("numberOfThreads", DEFAULT_NUMBER_OF_THREADS, (variable, defaultVar) -> {
                 try {
                     return Integer.parseInt(variable);
                 } catch (NumberFormatException e) {
@@ -38,15 +46,12 @@ public final class Server {
             String dataBaseTable = ParsFromEV.getFromEV("dbtable", "lab", (stringTable, defaultValue) -> stringTable);
             String dataBaseUser = ParsFromEV.getFromEV("dbuser", "postgres", (stringUser, defaultValue) -> stringUser);
             String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "87740432164", (stringPassword, defaultValue) -> stringPassword);
-            try (Connection connectionDB = DriverManager.getConnection(
-                "jdbc:postgresql://" + dataBaseHost + '/' + dataBaseTable,
-                dataBaseUser,
-                dataBasePassword)) {
-                    ServerApp app = new ServerApp(address, port, connectionDB);
+            try (Connection connectionDB = DriverManager.getConnection("jdbc:postgresql://" + dataBaseHost + '/' + dataBaseTable, dataBaseUser, dataBasePassword)) {
+                    ServerApp app = new ServerApp(address, port, connectionDB, numberOfTreads);
                     app.start();
                 } catch (SQLException e) {
                     System.out.println("Failed to connect to postresql or another error");
-                    System.out.println("Use environment variables: dbhost, dbtable, dbuser, dbpassword");
+                    System.out.println("Use environment variables: address, port, numberOfThreads, dbhost, dbtable, dbuser, dbpassword");
                     e.printStackTrace();
                 }
         } catch (IOException e) {

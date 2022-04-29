@@ -38,7 +38,4 @@ public class Message implements Serializable {
     public void setCommand(String command) {
         this.nameCommand = command;
     }
-
-    public Message() {
-    }
 }

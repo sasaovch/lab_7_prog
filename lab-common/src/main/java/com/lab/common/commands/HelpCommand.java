@@ -5,7 +5,7 @@ import com.lab.common.util.BodyCommand;
 
 public class HelpCommand extends Command {
 
-    public HelpCommand () {
+    public HelpCommand() {
     }
 
     @Override

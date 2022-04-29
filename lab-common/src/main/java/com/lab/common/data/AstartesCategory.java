@@ -9,7 +9,7 @@ public enum AstartesCategory {
 
     private final String name;
 
-    private AstartesCategory(String name) {
+    AstartesCategory(String name) {
         this.name = name;
     }
 

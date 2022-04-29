@@ -13,7 +13,7 @@ import com.lab.common.data.SpaceMarine;
 import com.lab.common.exception.IncorrectData;
 import com.lab.common.exception.IncorrectDataOfFileException;
 
-public class AskerInformation {
+public final class AskerInformation {
     private static final int MIN_HEALTH = 1;
     private static final int MIN_HEARTCOUNT = 1;
     private static final int MAX_HEARTCOUNT = 3;
@@ -140,8 +140,11 @@ public class AskerInformation {
     }
 
     public static int askTypeOfAuthen(IOManager ioManager) throws IOException {
+        int exitNumber = 0;
+        int logInNumber = 1;
+        int signUpNumber = 2;
         try {
-            return asker(Integer::parseInt, (s) -> (s == 1 || s == 2 || s == 3),"Enter '1' to log in, '2' to sign up, '3' to exit.", "It's not correct", false, false, ioManager);
+            return asker(Integer::parseInt, (s) -> (s == logInNumber || s == signUpNumber || s == exitNumber), "Enter  '0' to exit, '1' to log in, '2' to sign up.", "It's not correct", false, false, ioManager);
         } catch (IncorrectDataOfFileException e) {
             e.printStackTrace(); // never throw
             return -1;
@@ -152,14 +155,16 @@ public class AskerInformation {
                        Predicate<T> predicate,
                        String askField,
                        String wrongValue,
-                       Boolean nullable,
-                       Boolean fileMode,
+                       boolean nullable,
+                       boolean fileMode,
                        IOManager ioManager) throws IOException, IncorrectDataOfFileException {
         String stringIn;
         T value;
         while (true) {
-            ioManager.println(askField);
-            ioManager.prompt();
+            if (!fileMode) {
+                ioManager.println(askField);
+                ioManager.prompt();
+            }
             try {
                 stringIn = ioManager.readLine().trim();
                 if ("".equals(stringIn) && nullable) {

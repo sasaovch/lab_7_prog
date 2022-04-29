@@ -34,6 +34,7 @@ public class SendManager {
         try {
             Thread.sleep(defaultSleepTime);
         } catch (InterruptedException e) {
+            return;
         }
     }
 

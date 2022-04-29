@@ -1,4 +1,4 @@
-package com.lab.server;
+package com.lab.server.serverWork;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -12,6 +12,9 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,69 +28,58 @@ import com.lab.server.util.UserManager;
 
 
 public class ServerApp {
+    private static final Logger LOGGER;
+    private final Scanner scanner;
     private CommandManager commands;
     private SQLSpMarCollManager sqlSpMarCollManager;
     private UserManager userManager;
-    private final Logger logger;
-    private final Scanner scanner;
     private Connection connectionDB;
     private SocketAddress client;
     private SocketAddress address;
     private DatagramChannel channel;
     private boolean isWorkState;
-    private SendManager sendManager;
     private ReceiveManager receiveManager;
+    private ExecutorService executorService;
 
-    public ServerApp(InetAddress addr, int port, Connection connDB) throws SQLException {
+    public ServerApp(InetAddress addr, int port, Connection connDB, int numberOfTreads) throws SQLException {
         this.address = new InetSocketAddress(addr, port);
         this.connectionDB = connDB;
         sqlSpMarCollManager = new SQLSpMarCollManager(connectionDB);
         userManager = new UserManager(connectionDB);
         commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager, userManager);
+        executorService = Executors.newFixedThreadPool(numberOfTreads);
     }
 
     {
         isWorkState = true;
-        logger = LoggerFactory.getLogger(ServerApp.class);
         scanner = new Scanner(System.in);
+    }
+
+    static {
+        LOGGER = LoggerFactory.getLogger(ServerApp.class);
     }
 
     public void start() throws IOException, ClassNotFoundException, InterruptedException, NumberFormatException, SQLException, NoSuchAlgorithmException {
         try (DatagramChannel datachannel = DatagramChannel.open()) {
             this.channel = datachannel;
-            logger.info("Open datagram channel. Server started working.");
-            sendManager = new SendManager(channel, client);
+            LOGGER.info("Open datagram channel. Server started working.");
             receiveManager = new ReceiveManager(channel, client);
             try {
                 channel.bind(address);
-                logger.info(channel.getLocalAddress().toString());
+                LOGGER.info(channel.getLocalAddress().toString());
             } catch (BindException z) {
-                logger.error("Cannot assign requested address.", z);
+                LOGGER.error("Cannot assign requested address.", z);
                 isWorkState = false;
             }
             channel.configureBlocking(false);
             Message mess;
-            CommandResult result;
             while (isWorkState) {
                 checkCommands();
                 mess = receiveManager.receiveMessage();
                 if (Objects.isNull(mess)) {
                     continue;
-                } 
-                else if ("error".equals(mess.getCommand())) {
-                    logger.info("Something with data went wrong.");
-                    sendManager.setClient(receiveManager.getClient());
-                    sendManager.sendCommResult(new CommandResult("error", null, false, "Something with data went wrong. Try again."));
-                    continue;
                 }
-                if (mess.getCommand().equals("exit")) {
-                    logger.info("Client disconnected.");
-                    userManager.disconnect(mess.getClient());
-                    continue;
-                }
-                result = execute(mess);
-                sendManager.setClient(receiveManager.getClient());
-                sendManager.sendCommResult(result);
+                executorService.submit(new ClientThread(new SendManager(channel, receiveManager.getClient()), mess));
             }
         }
     }
@@ -107,8 +99,37 @@ public class ServerApp {
                 line = "exit";
             }
             if ("exit".equals(line)) {
-                logger.info("Server finished working.");
+                LOGGER.info("Server finished working.");
+                executorService.shutdown();
                 isWorkState = false;
+            }
+        }
+    }
+
+    private class ClientThread implements Runnable {
+        private final SendManager sendManager;
+        private final Message mess;
+
+        ClientThread(SendManager socket, Message mess) {
+            this.sendManager = socket;
+            this.mess = mess;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if ("error".equals(mess.getCommand())) {
+                    LOGGER.info("Something with data went wrong.");
+                    sendManager.sendCommResult(new CommandResult("error", null, false, "Something with data went wrong. Try again."));
+                }
+                if (mess.getCommand().equals("exit")) {
+                    LOGGER.info("Client disconnected.");
+                    userManager.disconnect(mess.getClient());
+                }
+                CommandResult result = execute(mess);
+                sendManager.sendCommResult(result);
+            } catch (IOException | SQLException e) {
+                e.printStackTrace();
             }
         }
     }

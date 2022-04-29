@@ -126,7 +126,7 @@ public class SpaceMarine implements Comparable<SpaceMarine>, Serializable {
         return "\nName: " + name + "\nId: " + id + "\nHealth: " + health + "\nHeartCount: "
                 + heartCount + "\nLoyal: " + loyal + "\nInitialization time: "
                 + creationDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                + "\n" + "Chapter:\n" + chapter + "\n" + coordinates + "\nCategory: " + category 
+                + "\n" + "Chapter:\n" + chapter + "\n" + coordinates + "\nCategory: " + category
                 + "\n" + "Onwer name: " + ownerName;
     }
 

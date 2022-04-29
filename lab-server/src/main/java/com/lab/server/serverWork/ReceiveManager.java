@@ -1,4 +1,4 @@
-package com.lab.server;
+package com.lab.server.serverWork;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import com.lab.common.util.Message;
 public class ReceiveManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveManager.class);
     private final int defaultBufferSize = 256;
+    private final int defaultSleepTime = 500;
     private DatagramChannel channel;
     private SocketAddress client;
 
@@ -47,12 +48,17 @@ public class ReceiveManager {
             Serializable receiveMess = deserialize(bufReceiveSize);
             if (receiveMess.getClass().equals(Integer.class)) {
                 int size = (int) receiveMess;
+                try {
+                    Thread.sleep(defaultSleepTime);
+                } catch (InterruptedException e) {
+                    return null;
+                }
                 byte[] bufr = new byte[size];
                 ByteBuffer receiveBuffer = ByteBuffer.wrap(bufr);
                 channel.receive(receiveBuffer);
                 receiveMess = deserialize(bufr);
                 mess = (Message) receiveMess;
-                LOGGER.info("Received message: " +"\n-----------------\n" +  mess.getCommand()+ "\n-----------------------");
+                LOGGER.info("Received message: " + "\n-----------------\n" + mess.getCommand() + "\n-----------------------");
             } else {
                 mess = (Message) receiveMess;
             }

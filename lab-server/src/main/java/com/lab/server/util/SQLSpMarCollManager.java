@@ -49,7 +49,8 @@ public class SQLSpMarCollManager implements CollectionManager {
 
     private SpaceMarine mapRowToSpaceMarine(ResultSet res) throws SQLException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        SpaceMarine newSpacMar = new SpaceMarine(); 
+        SpaceMarine newSpacMar = new SpaceMarine();
+
         newSpacMar.setName(res.getString("name"));
         newSpacMar.setID(res.getLong("id"));
         newSpacMar.setTime(LocalDateTime.parse(res.getString("creating_date_time"), formatter));
@@ -57,16 +58,22 @@ public class SQLSpMarCollManager implements CollectionManager {
         newSpacMar.setHealth(Integer.parseInt(res.getString("health")));
         newSpacMar.setHeartCount(Integer.parseInt(res.getString("heart_count")));
         newSpacMar.setCategory(AstartesCategory.valueOf(res.getString("astartes_category").toUpperCase()));
+
         PreparedStatement prepStat;
         if (Objects.nonNull(res.getString("chapter"))) {
-            String getChapter = "SELECT * FROM chapter WHERE id=?;";
+            String getChapter = "SELECT * FROM chapter WHERE id=?";
             prepStat = connectionDB.prepareStatement(getChapter);
             prepStat.setLong(1, res.getLong("chapter"));
             ResultSet resChapter = prepStat.executeQuery();
             resChapter.next();
-            newSpacMar.setChapter(new Chapter(resChapter.getLong("id"), resChapter.getString("name"), resChapter.getString("parent_legion"), resChapter.getInt("marines_count"), resChapter.getString("world")));
+            newSpacMar.setChapter(new Chapter(resChapter.getLong("id"),
+                                    resChapter.getString("name"),
+                                    resChapter.getString("parent_legion"),
+                                    resChapter.getInt("marines_count"),
+                                    resChapter.getString("world")));
         }
-        String getCoordinates = "SELECT * FROM coordinates WHERE id=?;";
+
+        String getCoordinates = "SELECT * FROM coordinates WHERE id=?";
         prepStat = connectionDB.prepareStatement(getCoordinates);
         prepStat.setInt(1, res.getInt("coordinates"));
         ResultSet resCoord = prepStat.executeQuery();
@@ -79,7 +86,6 @@ public class SQLSpMarCollManager implements CollectionManager {
     private void prepareStatSpMar(PreparedStatement stat, SpaceMarine spaceMarine) throws SQLException {
         int indexColumn = 1;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        // name, time, coordinates, health, heart_count, loyal, astartes_category, chapter, owner_name
         stat.setString(indexColumn++, spaceMarine.getName());
         stat.setTimestamp(indexColumn++, Timestamp.valueOf(spaceMarine.getCreationDateTime().format(formatter)));
         stat.setLong(indexColumn++, spaceMarine.getCoordinates().getId());
@@ -96,33 +102,31 @@ public class SQLSpMarCollManager implements CollectionManager {
         } else {
             stat.setLong(indexColumn++, spaceMarine.getChapter().getId());
         }
-        stat.setString(indexColumn++, spaceMarine.getOwnerName());
+        stat.setString(indexColumn, spaceMarine.getOwnerName());
     }
 
     private void prepareStatCoord(PreparedStatement stat, Coordinates coordinates) throws SQLException {
         int indexColumn = 1;
-        // x, y
         stat.setDouble(indexColumn++, coordinates.getX());
-        stat.setLong(indexColumn++, coordinates.getY());
+        stat.setLong(indexColumn, coordinates.getY());
     }
 
     private void prepareStatChapt(PreparedStatement stat, Chapter chapter) throws SQLException {
         int indexColumn = 1;
-        // name, parent_legion, marines_count, world
         stat.setString(indexColumn++, chapter.getName());
         stat.setString(indexColumn++, chapter.getParentLegion());
         stat.setLong(indexColumn++, chapter.getMarinesCount());
-        stat.setString(indexColumn++, chapter.getWorld());
+        stat.setString(indexColumn, chapter.getWorld());
     }
 
     @Override
     public boolean addElement(SpaceMarine spMar) {
         String insertSpaceMar = "INSERT INTO spacemarine VALUES ("
-                     + "    default,?,?,?,?,?,?,?::astartes_category,?,?) RETURNING id"; // name, time, coordinates, health, heart_count, loyal, astartes_category, chapter, owner_name
+                     + "    default,?,?,?,?,?,?,?::astartes_category,?,?) RETURNING id";
         String insertCoord = "INSERT INTO coordinates VALUES ("
-                     + "    default,?,?) RETURNING id"; // x, y
+                     + "    default,?,?) RETURNING id";
         String insertChapter = "INSERT INTO chapter VALUES ("
-                     + "    default,?,?,?,?) RETURNING id"; // name, parent_legion, marines_count, world
+                     + "    default,?,?,?,?) RETURNING id";
         if (spaceMarineCollection.checkContains(spMar)) {
             return false;
         }
@@ -131,7 +135,6 @@ public class SQLSpMarCollManager implements CollectionManager {
             PreparedStatement statChapter = connectionDB.prepareStatement(insertChapter);
             PreparedStatement statSpMar = connectionDB.prepareStatement(insertSpaceMar);
         ) {
-            //lock.lock();
             prepareStatCoord(statCoord, spMar.getCoordinates());
             ResultSet resCoord = statCoord.executeQuery();
             resCoord.next();
@@ -151,8 +154,6 @@ public class SQLSpMarCollManager implements CollectionManager {
         } catch (SQLException e) {
             LOGGER.error("Failed to insert element into spacemarine database", e);
             return false;
-        } finally {
-            //lock.unlock();
         }
     }
 
@@ -168,19 +169,18 @@ public class SQLSpMarCollManager implements CollectionManager {
     }
 
     @Override
-    public boolean clearCollection() {
-        try (Statement stat = connectionDB.createStatement()) {
-            stat.execute("DELETE FROM spacemarine *");
-            stat.execute("DELETE FROM coordinates *");
-            stat.execute("DELETE FROM chapter *");
-            spaceMarineCollection.clearCollection();
+    public boolean clearCollection(String userName) {
+        String clearStat = "DELETE FROM spacemarine WHERE owner_name=? RETURNING id";
+        try (PreparedStatement stat = connectionDB.prepareStatement(clearStat)) {
+            stat.setString(1, userName);
+            ResultSet res = stat.executeQuery();
+            while (res.next()) {
+                spaceMarineCollection.removeById(res.getLong("id"));
+            }
             return true;
         } catch (SQLException e) {
-            //LOGGER.error("Failed to clear table", e);
-            LOGGER.info("Failed to clear table");
+            LOGGER.error("Failed to clear table with spacemarine", e);
             return false;
-        } finally {
-            //lock.unlock();
         }
     }
 
@@ -218,7 +218,6 @@ public class SQLSpMarCollManager implements CollectionManager {
             PreparedStatement statCoord = connectionDB.prepareStatement(removeCoord);
             PreparedStatement statChapter = connectionDB.prepareStatement(removeChapter);
             PreparedStatement statSpMar = connectionDB.prepareStatement(removeSpacMar);
-            //lock.lock();
             statSpMar.setLong(1, id);
             statCoord.setLong(1, spaceMarineCollection.findByID(id).getCoordinates().getId());
             if (Objects.nonNull(spaceMarineCollection.findByID(id).getChapter())) {
@@ -231,11 +230,8 @@ public class SQLSpMarCollManager implements CollectionManager {
             }
             return true;
         } catch (SQLException e) {
-            //LOGGER.error("Failed to insert element into DB", e);
-            LOGGER.info("Failed to inser element into DB");
+            LOGGER.error("Failed to inser spacemarine into DB", e);
             return false;
-        } finally {
-            //lock.unlock();
         }
     }
 
@@ -246,83 +242,103 @@ public class SQLSpMarCollManager implements CollectionManager {
 
     @Override
     public boolean updateSpaceMarine(SpaceMarine newMarine, Long id) {
+        final int indexOfCoordId = 3;
+        final int indexOfSpMarId = 9;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        // name, time, coordinates, health, heart_count, loyal, astartes_category, chapter, owner_name
-        String updSpaceMar = "UPDATE spacemarine SET "
-                     + "name=?, "
-                     + "creating_date_time=?, " 
-                     + "coordinates=?, "
-                     + "health=?, "
-                     + "heart_count=?, "
-                     + "loyal=?, "
-                     + "astartes_category=?::astartes_category, "
-                     + "chapter=? "
-                     + "WHERE id=? ";
-        String updCoord = "UPDATE coordinates SET "
-                     + "x=?, "
-                     + "y=? "
-                     + "WHERE id=? ";
-        String updChapter = "UPDATE chapter SET "
-                     + "name=?, "
-                     + "parent_legion=?, "
-                     + "marines_count=?, "
-                     + "world=? "
-                     + "WHERE id=? ";
+        String updSpaceMar = createUpdateQuerySpMar();
+        String updCoord = createUpdateQueryCoord();
+        String updChapter = createUpdateQueryChapter();
         try (
             PreparedStatement getSpMarData = connectionDB.prepareStatement("SELECT chapter, coordinates, creating_date_time, owner_name FROM spacemarine WHERE id=?");
             PreparedStatement statCoord = connectionDB.prepareStatement(updCoord);
             PreparedStatement statChapter = connectionDB.prepareStatement(updChapter);
             PreparedStatement statSpMar = connectionDB.prepareStatement(updSpaceMar);
         ) {
-            //lock.lock();
             getSpMarData.setLong(1, id);
             ResultSet dataOfOldSpMar = getSpMarData.executeQuery();
-            if (!dataOfOldSpMar.next()) {
-                return false;
-            };
-            if (!dataOfOldSpMar.getString("owner_name").equals(newMarine.getOwnerName())) {
+            if (!checkAbilityToUpdate(dataOfOldSpMar, newMarine)) {
                 return false;
             }
             prepareStatCoord(statCoord, newMarine.getCoordinates());
             // update old coordinates
-            statCoord.setLong(3, dataOfOldSpMar.getLong("coordinates"));
+            statCoord.setLong(indexOfCoordId, dataOfOldSpMar.getLong("coordinates"));
             statCoord.executeUpdate();
             // set up new id coordinates
             newMarine.getCoordinates().setId(dataOfOldSpMar.getLong("coordinates"));
             // check chapter is not null in new spaceMarine
-            if (Objects.nonNull(newMarine.getChapter())) {
-                // check if chapter in old spaceMarine is null
-                if (dataOfOldSpMar.getLong("chapter") == 0L) {
-                    String addChapter = "INSERT INTO chapter VALUES ("
-                    + "    default,?,?,?,?) RETURNING id";
-                    PreparedStatement statAddChapter = connectionDB.prepareStatement(addChapter);
-                    prepareStatChapt(statAddChapter, newMarine.getChapter());
-                    ResultSet addChapterRes = statAddChapter.executeQuery();
-                    addChapterRes.next();
-                    newMarine.getChapter().setId(addChapterRes.getLong("id"));
-                } else {
-                    prepareStatChapt(statChapter, newMarine.getChapter());
-                    statChapter.setLong(5, dataOfOldSpMar.getLong("chapter"));
-                    statChapter.executeUpdate();
-                    newMarine.getChapter().setId(dataOfOldSpMar.getLong("chapter"));
-                }
-            }
+            setChapterForUpdate(dataOfOldSpMar, newMarine, statChapter);
             newMarine.setTime(LocalDateTime.parse(dataOfOldSpMar.getString("creating_date_time"), formatter));
             prepareStatSpMar(statSpMar, newMarine);
-            statSpMar.setLong(9, id);
+            statSpMar.setLong(indexOfSpMarId, id);
             int count = statSpMar.executeUpdate();
             if (count > 0) {
                 spaceMarineCollection.updateSpaceMarine(newMarine, id);
             }
             return true;
         } catch (SQLException e) {
-            //LOGGER.error("Failed to insert element into DB", e);
-            LOGGER.info("Failed to update element");
-            e.printStackTrace();
+            LOGGER.error("Failed to update spacemarine", e);
             return false;
-        } finally {
-            //lock.unlock();
         }
+    }
+
+    private boolean checkAbilityToUpdate(ResultSet dataOfOldSpMar, SpaceMarine newMarine) throws SQLException {
+        if (!dataOfOldSpMar.next()) {
+            return false;
+        }
+        if (!dataOfOldSpMar.getString("owner_name").equals(newMarine.getOwnerName())) {
+            return false;
+        }
+        return true;
+    }
+
+    private void setChapterForUpdate(ResultSet dataOfOldSpMar, SpaceMarine newMarine, PreparedStatement preparChStatement) throws SQLException {
+        final int indexOfChapterId = 5;
+        if (Objects.nonNull(newMarine.getChapter())) {
+            // check if chapter in old spaceMarine is null
+            if (dataOfOldSpMar.getLong("chapter") == 0L) {
+                String addChapter = "INSERT INTO chapter VALUES ("
+                + "    default,?,?,?,?) RETURNING id";
+                PreparedStatement statAddChapter = connectionDB.prepareStatement(addChapter);
+                prepareStatChapt(statAddChapter, newMarine.getChapter());
+                ResultSet addChapterRes = statAddChapter.executeQuery();
+                addChapterRes.next();
+                newMarine.getChapter().setId(addChapterRes.getLong("id"));
+            } else {
+                prepareStatChapt(preparChStatement, newMarine.getChapter());
+                preparChStatement.setLong(indexOfChapterId, dataOfOldSpMar.getLong("chapter"));
+                preparChStatement.executeUpdate();
+                newMarine.getChapter().setId(dataOfOldSpMar.getLong("chapter"));
+            }
+        }
+    }
+
+    private String createUpdateQuerySpMar() {
+        return "UPDATE spacemarine SET "
+        + "name=?, "
+        + "creating_date_time=?, "
+        + "coordinates=?, "
+        + "health=?, "
+        + "heart_count=?, "
+        + "loyal=?, "
+        + "astartes_category=?::astartes_category, "
+        + "chapter=? "
+        + "WHERE id=? ";
+    }
+
+    private String createUpdateQueryCoord() {
+        return "UPDATE coordinates SET "
+        + "x=?, "
+        + "y=? "
+        + "WHERE id=? ";
+    }
+
+    private String createUpdateQueryChapter() {
+        return "UPDATE chapter SET "
+        + "name=?, "
+        + "parent_legion=?, "
+        + "marines_count=?, "
+        + "world=? "
+        + "WHERE id=? ";
     }
 
     @Override
@@ -347,7 +363,7 @@ public class SQLSpMarCollManager implements CollectionManager {
             }
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to remove spacemarine", e);
             return false;
         }
     }

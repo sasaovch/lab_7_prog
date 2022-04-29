@@ -2,6 +2,7 @@ package com.lab.server.util;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,24 +11,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.lab.common.data.SpaceMarine;
-import com.lab.common.util.CollectionManager;
 
 
-public class SpaceMarineCollection implements CollectionManager {
-    private final HashSet<SpaceMarine> spaceMarineSet;
+public class SpaceMarineCollection {
+    private final Collection<SpaceMarine> spaceMarineSet;
     private final LocalDateTime initializationTime;
-    private final TreeSet<Long> usedID;
+    private final Collection<Long> usedID;
 
     public SpaceMarineCollection() {
-        spaceMarineSet = new HashSet<>();
+        spaceMarineSet = Collections.synchronizedSet(new HashSet<>());
         initializationTime = LocalDateTime.now();
-        usedID = new TreeSet<>();
+        usedID = Collections.synchronizedSet(new HashSet<Long>());
     }
 
     public boolean addElement(SpaceMarine spaceMarine) {
@@ -36,12 +35,12 @@ public class SpaceMarineCollection implements CollectionManager {
                 spaceMarine.setID(1L);
                 usedID.add(1L);
             } else {
-                spaceMarine.setID(usedID.last() + 1);
-                usedID.add(usedID.last() + 1);
+                spaceMarine.setID(getLastId() + 1);
+                usedID.add(getLastId() + 1);
             }
         } else if (usedID.contains(spaceMarine.getID())) {
-            spaceMarine.setID(usedID.last() + 1);
-            usedID.add(usedID.last() + 1);
+            spaceMarine.setID(getLastId() + 1);
+            usedID.add(getLastId() + 1);
         } else {
             usedID.add(spaceMarine.getID());
         }
@@ -88,7 +87,10 @@ public class SpaceMarineCollection implements CollectionManager {
     }
 
     public Long getLastId() {
-        return usedID.last();
+        return usedID.stream().max((o1, o2) -> {
+            Long result = o1 - o2;
+            return result.intValue();
+        }).get();
     }
 
     public boolean clearCollection() {
