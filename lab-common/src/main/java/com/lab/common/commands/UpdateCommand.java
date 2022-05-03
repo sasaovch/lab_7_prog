@@ -1,6 +1,7 @@
 package com.lab.common.commands;
 
 import com.lab.common.data.SpaceMarine;
+import com.lab.common.data.User;
 import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.BodyCommandWithSpMar;
@@ -18,18 +19,18 @@ public class UpdateCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
         SpaceMarine newSpaceMarine = bodyCommandWithSpMar.getSpaceMarine();
-        newSpaceMarine.setOwnerName(userName);
+        newSpaceMarine.setOwnerName(client.getLogin());
         Long id = (Long) bodyCommand.getData();
         if (collectionManager.getSize() == 0) {
             return new CommandResult("update", null, false, "There are no such element in the collection.");
         }
-        if (collectionManager.updateSpaceMarine(newSpaceMarine, id)) {
-            return new CommandResult("update", null, true, "Marine has been successfully updated.");
-        } else {
-            return new CommandResult("update", null, false, "Id is not correct or insufficient access rights.");
+        switch (collectionManager.updateSpaceMarine(newSpaceMarine, id)) {
+            case True : return new CommandResult("update", null, true, "Marine has been successfully updated.");
+            case False :  return new CommandResult("update", null, false, "Id is not correct or insufficient access rights.");
+            default :  return new CommandResult("update", null, false, "Database broke down.");
         }
     }
 

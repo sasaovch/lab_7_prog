@@ -18,17 +18,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.lab.common.data.User;
+import com.lab.common.util.ResultStatusWorkWithColl;
 import com.lab.common.util.UserManagerInt;
 
-public class UserManager implements UserManagerInt {
+public class SQLUserManager implements UserManagerInt {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SQLUserManager.class);
     private static final String PEPPER = "^kiU)#320%,";
     private Collection<String> usersLoginSet;
     private final Connection connectionDB;
 
-    public UserManager(Connection connectionDB) throws SQLException {
+    public SQLUserManager(Connection connectionDB) throws SQLException {
         this.connectionDB = connectionDB;
+        CreateSQLTable.createUserTable(connectionDB);
         deSerialize();
     }
 
@@ -61,15 +63,16 @@ public class UserManager implements UserManagerInt {
 
     @Override
     public User authenticate(User client) {
-        if (addElement(client)) {
+        if (addElement(client).equals(ResultStatusWorkWithColl.True)) {
             client.setAuntificationStatusTrue();
             return client;
         }
         return null;
     }
 
-    public boolean addElement(User client) {
+    public ResultStatusWorkWithColl addElement(User client) {
         final int saltBytes = 7;
+        final int indexPassword = 2;
         String insertUser = "INSERT INTO users VALUES ("
                 + " ?,?,?) RETURNING login";
         Encoder encoder = Base64.getEncoder();
@@ -78,20 +81,20 @@ public class UserManager implements UserManagerInt {
         random.nextBytes(salt);
         String saltStr = encoder.encodeToString(salt);
         String hashStr = encodeHashWithSalt(client.getPassword(), saltStr);
-        client.setPassword(hashStr);
         client.setSalt(saltStr);
         try (PreparedStatement statUser = connectionDB.prepareStatement(insertUser)) {
             prepareStatUser(statUser, client);
+            statUser.setString(indexPassword, hashStr);
             ResultSet resUser = statUser.executeQuery();
             resUser.next();
             if (resUser.getString("login").equals(client.getLogin())) {
                 usersLoginSet.add(client.getLogin());
-                return true;
+                return ResultStatusWorkWithColl.True;
             }
-            return false;
+            return ResultStatusWorkWithColl.False;
         } catch (SQLException e) {
             LOGGER.error("Failed to insert element into users database", e);
-            return false;
+            return ResultStatusWorkWithColl.Error;
         }
     }
 
@@ -103,7 +106,7 @@ public class UserManager implements UserManagerInt {
     }
 
     @Override
-    public boolean login(User client) {
+    public ResultStatusWorkWithColl login(User client) {
         final String findUserQuery = "SELECT * FROM users WHERE login = ?";
         if (usersLoginSet.contains(client.getLogin())) {
             try (PreparedStatement statement = connectionDB.prepareStatement(findUserQuery)) {
@@ -113,18 +116,13 @@ public class UserManager implements UserManagerInt {
                 String realPasswordHashed = res.getString("password");
                 String passwordHashed = encodeHashWithSalt(client.getPassword(), res.getString("salt"));
                 if (passwordHashed.equals(realPasswordHashed)) {
-                    return true;
+                    return ResultStatusWorkWithColl.True;
                 }
             } catch (SQLException e) {
                 LOGGER.error("Failed to select element from users database", e);
-                return false;
+                return ResultStatusWorkWithColl.Error;
             }
         }
-        return false;
-    }
-
-
-    public void disconnect(User client) {
-        usersLoginSet.remove(client.getLogin());
+        return ResultStatusWorkWithColl.False;
     }
 }

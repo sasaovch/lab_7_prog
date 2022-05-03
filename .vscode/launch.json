@@ -28,7 +28,7 @@
             "type": "java",
             "name": "Launch Server",
             "request": "launch",
-            "mainClass": "com.lab.server.Server",
+            "mainClass": "com.lab.server.serverWork.Server",
             "projectName": "lab-server"
         }
     ],

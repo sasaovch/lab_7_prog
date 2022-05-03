@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import com.lab.common.data.SpaceMarine;
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
@@ -19,7 +20,7 @@ public class GroupCountingByNameCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
             if (collectionManager.getSize() == 0) {
                 return new CommandResult("group_counting_by_name", null, true, "The collection is empty.");
             }

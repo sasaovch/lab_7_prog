@@ -52,4 +52,9 @@ public class User implements Serializable {
     public void setAuntificationStatusFalse() {
         authenticationStatus = false;
     }
+
+    @Override
+    public String toString() {
+        return login;
+    }
 }

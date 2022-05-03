@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.TreeMap;
 
 import com.lab.common.data.SpaceMarine;
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
@@ -18,7 +19,7 @@ public class InfoCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         TreeMap<String, Object> outMap = new TreeMap<>();
         outMap.put("Initialization time", collectionManager.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         outMap.put("Number of Marines", collectionManager.getSize());

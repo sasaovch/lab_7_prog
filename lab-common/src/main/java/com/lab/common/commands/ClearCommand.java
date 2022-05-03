@@ -1,5 +1,6 @@
 package com.lab.common.commands;
 
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
@@ -14,10 +15,10 @@ public class ClearCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
-        if (collectionManager.clearCollection(userName)) {
-            return new CommandResult("clear", null, true, "The collection is cleared.");
+    public CommandResult run(BodyCommand bodyCommand, User client) {
+        switch (collectionManager.clearCollection(client.getLogin())) {
+            case True : return new CommandResult("clear", null, true, "The collection is cleared.");
+            default :  return new CommandResult("clear", null, false, "Database broke down.");
         }
-        return new CommandResult("clear", null, false, "Something went wrong. Try again.");
     }
 }

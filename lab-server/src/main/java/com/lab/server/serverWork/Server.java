@@ -42,6 +42,10 @@ public final class Server {
                     return defaultVar;
                 }
             });
+            // String dataBaseHost = ParsFromEV.getFromEV("dbhost", "pg", (stringHost, defaultValue) -> stringHost);
+            // String dataBaseTable = ParsFromEV.getFromEV("dbtable", "studs", (stringTable, defaultValue) -> stringTable);
+            // String dataBaseUser = ParsFromEV.getFromEV("dbuser", "s336768", (stringUser, defaultValue) -> stringUser);
+            // String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "ccw507", (stringPassword, defaultValue) -> stringPassword);
             String dataBaseHost = ParsFromEV.getFromEV("dbhost", "localhost", (stringHost, defaultValue) -> stringHost);
             String dataBaseTable = ParsFromEV.getFromEV("dbtable", "lab", (stringTable, defaultValue) -> stringTable);
             String dataBaseUser = ParsFromEV.getFromEV("dbuser", "postgres", (stringUser, defaultValue) -> stringUser);
@@ -50,8 +54,8 @@ public final class Server {
                     ServerApp app = new ServerApp(address, port, connectionDB, numberOfTreads);
                     app.start();
                 } catch (SQLException e) {
-                    System.out.println("Failed to connect to postresql or another error");
-                    System.out.println("Use environment variables: address, port, numberOfThreads, dbhost, dbtable, dbuser, dbpassword");
+                    System.out.println("Failed to connect to postresql or another error.\n");
+                    System.out.println("Use environment variables: address, port, numberOfThreads, dbhost, dbtable, dbuser, dbpassword.\n");
                     e.printStackTrace();
                 }
         } catch (IOException e) {

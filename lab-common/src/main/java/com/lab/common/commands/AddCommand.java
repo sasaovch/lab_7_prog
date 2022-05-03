@@ -1,5 +1,6 @@
 package com.lab.common.commands;
 
+import com.lab.common.data.User;
 import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.BodyCommandWithSpMar;
@@ -18,14 +19,15 @@ public class AddCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
-        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(userName);
-        if (collectionManager.addElement(bodyCommandWithSpMar.getSpaceMarine())) {
-        return new CommandResult("add", null, true, bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added.");
-        } else {
-            return new CommandResult("add", null, false,
-                bodyCommandWithSpMar.getSpaceMarine().getName() + " already exists" + " or database broke down");
+        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(client.getLogin());
+        switch (collectionManager.addElement(bodyCommandWithSpMar.getSpaceMarine())) {
+            case True : return new CommandResult("add", null, true,
+                                                    bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added.");
+            case False :  return new CommandResult("add", null, false,
+                                                    bodyCommandWithSpMar.getSpaceMarine().getName() + " already exists.");
+            default :  return new CommandResult("add", null, false, "Database broke down.");
         }
     }
 

@@ -32,33 +32,38 @@ public class SendManager {
         return outMess;
     }
 
-    public void sendCommResult(CommandResult result) throws IOException {
-        byte[] bufs = serialize(result);
-        byte[] bufSendSize = serialize(bufs.length);
-        int sendSize = bufSendSize.length;
-        ByteBuffer sendBufferSize = ByteBuffer.wrap(bufSendSize);
-        int limit = limitSend;
-        while (channel.send(sendBufferSize, client) < sendSize) {
-            limit -= 1;
-            if (limit == 0) {
-                LOGGER.error("Server couldn't send message");
-                return;
+    public Boolean sendCommResult(CommandResult result) {
+        try {
+            byte[] bufs = serialize(result);
+            byte[] bufSendSize = serialize(bufs.length);
+            int sendSize = bufSendSize.length;
+            ByteBuffer sendBufferSize = ByteBuffer.wrap(bufSendSize);
+            int limit = limitSend;
+            while (channel.send(sendBufferSize, client) < sendSize) {
+                limit -= 1;
+                if (limit == 0) {
+                    LOGGER.error("Server couldn't send message.");
+                    return false;
+                }
             }
-        }
-        sendBufferSize.clear();
-        ByteBuffer sendBuffer = ByteBuffer.wrap(bufs);
-        sendSize = bufs.length;
-        limit = limitSend;
-        while (channel.send(sendBuffer, client) < sendSize) {
-            limit -= 1;
-            LOGGER.error("Could not sent a package, re-trying.");
-            if (limit == 0) {
-                LOGGER.error("Server couldn't send message.");
-                return;
+            sendBufferSize.clear();
+            ByteBuffer sendBuffer = ByteBuffer.wrap(bufs);
+            sendSize = bufs.length;
+            limit = limitSend;
+            while (channel.send(sendBuffer, client) < sendSize) {
+                limit -= 1;
+                if (limit == 0) {
+                    LOGGER.error("Server couldn't send message.");
+                    return false;
+                }
             }
+            sendBuffer.clear();
+            LOGGER.info("Send result of command to client: " + "\n-----------------------\n" +  result.getMessageResult() + "\n-----------------------");
+            return true;
+        } catch (IOException e) {
+            LOGGER.error("Server couldn't send message.", e);
+            return false;
         }
-        sendBuffer.clear();
-        LOGGER.info("Send result of command to client: " + "\n-----------------\n" +  result.getMessageResult() + "\n-----------------------");
     }
 
     public void setClient(SocketAddress client) {

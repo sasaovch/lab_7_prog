@@ -1,5 +1,6 @@
 package com.lab.common.commands;
 
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 
 
@@ -9,7 +10,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         return new CommandResult("help", null, true, "help : print info about all commands\n"
         + "info : print info about collection: type, initialization date, number of elements\n"
         + "show : print all elements of collection\n"

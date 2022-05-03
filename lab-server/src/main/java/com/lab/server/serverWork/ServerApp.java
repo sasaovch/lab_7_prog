@@ -6,12 +6,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,8 +23,9 @@ import com.lab.common.commands.CommandManager;
 import com.lab.common.commands.CommandResult;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.Message;
+import com.lab.common.util.ResultStatusWorkWithColl;
 import com.lab.server.util.SQLSpMarCollManager;
-import com.lab.server.util.UserManager;
+import com.lab.server.util.SQLUserManager;
 
 
 public class ServerApp {
@@ -32,22 +33,24 @@ public class ServerApp {
     private final Scanner scanner;
     private CommandManager commands;
     private SQLSpMarCollManager sqlSpMarCollManager;
-    private UserManager userManager;
+    private SQLUserManager userManager;
     private Connection connectionDB;
     private SocketAddress client;
     private SocketAddress address;
     private DatagramChannel channel;
     private boolean isWorkState;
     private ReceiveManager receiveManager;
-    private ExecutorService executorService;
+    private ExecutorService hanbleMessExecutorService;
+    private ExecutorService sendCommandRExecutorService;
 
     public ServerApp(InetAddress addr, int port, Connection connDB, int numberOfTreads) throws SQLException {
         this.address = new InetSocketAddress(addr, port);
         this.connectionDB = connDB;
+        userManager = new SQLUserManager(connectionDB);
         sqlSpMarCollManager = new SQLSpMarCollManager(connectionDB);
-        userManager = new UserManager(connectionDB);
         commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager, userManager);
-        executorService = Executors.newFixedThreadPool(numberOfTreads);
+        hanbleMessExecutorService = Executors.newFixedThreadPool(numberOfTreads);
+        sendCommandRExecutorService = Executors.newFixedThreadPool(numberOfTreads);
     }
 
     {
@@ -59,7 +62,7 @@ public class ServerApp {
         LOGGER = LoggerFactory.getLogger(ServerApp.class);
     }
 
-    public void start() throws IOException, ClassNotFoundException, InterruptedException, NumberFormatException, SQLException, NoSuchAlgorithmException {
+    public void start() throws IOException {
         try (DatagramChannel datachannel = DatagramChannel.open()) {
             this.channel = datachannel;
             LOGGER.info("Open datagram channel. Server started working.");
@@ -79,15 +82,33 @@ public class ServerApp {
                 if (Objects.isNull(mess)) {
                     continue;
                 }
-                executorService.submit(new ClientThread(new SendManager(channel, receiveManager.getClient()), mess));
+                new ClientThread(mess, new SendManager(channel, receiveManager.getClient())).start();
             }
         }
     }
 
-    public CommandResult execute(Message mess) throws SQLException {
+    public CommandResult execute(Message mess) {
         Command command = commands.getMap().get(mess.getCommand());
         BodyCommand data = mess.getBodyCommand();
-        return command.run(data, mess.getClient().getLogin());
+        CommandResult result;
+        if (mess.getCommand().equals("sign up")) {
+            result = command.run(data, mess.getClient());
+        } else if (mess.getCommand().equals("log in")) {
+            result = command.run(data, mess.getClient());
+        } else if (mess.getCommand().equals("exit")) {
+            LOGGER.info("Client - " + mess.getClient() + " disconnected.");
+            result = command.run(data, mess.getClient());
+        } else {
+            ResultStatusWorkWithColl authentication = userManager.login(mess.getClient());
+            switch (authentication) {
+                case True : result = command.run(data, mess.getClient());
+                            break;
+                case False : result = new CommandResult("error", null, false, "User verification failed.");
+                            break;
+                default : result = new CommandResult("error", null, false, "Database broke down.");
+            }
+        }
+        return result;
     }
 
     public void checkCommands() throws IOException {
@@ -100,36 +121,33 @@ public class ServerApp {
             }
             if ("exit".equals(line)) {
                 LOGGER.info("Server finished working.");
-                executorService.shutdown();
+                hanbleMessExecutorService.shutdown();
+                sendCommandRExecutorService.shutdown();
                 isWorkState = false;
             }
         }
     }
 
-    private class ClientThread implements Runnable {
-        private final SendManager sendManager;
+    private class ClientThread {
         private final Message mess;
+        private final SendManager sendManager;
 
-        ClientThread(SendManager socket, Message mess) {
-            this.sendManager = socket;
+        ClientThread(Message mess, SendManager sendManager) {
             this.mess = mess;
+            this.sendManager = sendManager;
         }
 
-        @Override
-        public void run() {
+        private void start() {
             try {
-                if ("error".equals(mess.getCommand())) {
-                    LOGGER.info("Something with data went wrong.");
-                    sendManager.sendCommResult(new CommandResult("error", null, false, "Something with data went wrong. Try again."));
+                CommandResult commandResult = hanbleMessExecutorService.submit(() -> execute(mess)).get();
+                Boolean sendResult = sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult)).get();
+                if (!sendResult) {
+                    LOGGER.error("Failed to send message.");
+                } else {
+                    LOGGER.info("Sent message to " + mess.getClient().getLogin());
                 }
-                if (mess.getCommand().equals("exit")) {
-                    LOGGER.info("Client disconnected.");
-                    userManager.disconnect(mess.getClient());
-                }
-                CommandResult result = execute(mess);
-                sendManager.sendCommResult(result);
-            } catch (IOException | SQLException e) {
-                e.printStackTrace();
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.error("This thread was damaged.", e);
             }
         }
     }

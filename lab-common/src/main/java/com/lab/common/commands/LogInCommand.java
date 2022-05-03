@@ -19,14 +19,16 @@ public class LogInCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         User newClient = (User) bodyCommand.getData();
         if (userCollection.checkIn(newClient)) {
-            if (userCollection.login(newClient)) {
-                newClient.setAuntificationStatusTrue();
-                return new CommandResult("log in", newClient, true, "Login successfully.");
+            switch (userCollection.login(newClient)) {
+                case True : newClient.setAuntificationStatusTrue();
+                            return new CommandResult("log in", newClient, true, "Login successfully.");
+                case False : return new CommandResult("log in", null, false, "Failed to log in.");
+                default :
+                    return new CommandResult("log in", null, false, "Database broke down.");
             }
-            return new CommandResult("log in", null, false, "Failed to log in.");
         }
         return new CommandResult("log in", null, false, "Unknown login. Enter another or sign up.");
     }

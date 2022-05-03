@@ -1,5 +1,6 @@
 package com.lab.common.commands;
 
+import com.lab.common.data.User;
 import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.BodyCommandWithSpMar;
@@ -18,14 +19,14 @@ public class RemoveLowerCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         BodyCommandWithSpMar bodyCommWitSpMar = (BodyCommandWithSpMar) bodyCommand;
-        if (collectionManager.removeIf(spaceMar -> {
-            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) < 0) && (spaceMar.getOwnerName().equals(userName));
+        switch (collectionManager.removeIf(spaceMar -> {
+            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) < 0) && (spaceMar.getOwnerName().equals(client.getLogin()));
             })) {
-            return new CommandResult("remove_lower", null, true, "All items have been successfully deleted.");
-        } else {
-            return new CommandResult("remove_lower", null, true, "No element has been deleted.");
+            case True : return new CommandResult("remove_lower", null, true, "All items have been successfully deleted.");
+            case False :  return new CommandResult("remove_lower", null, true, "No element has been deleted.");
+            default :  return new CommandResult("remove_lower", null, false, "Database broke down.");
         }
     }
 

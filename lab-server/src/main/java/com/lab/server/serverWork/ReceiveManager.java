@@ -35,7 +35,8 @@ public class ReceiveManager {
             is.close();
             return mess;
         } catch (ClassNotFoundException e) {
-            return new Message("error", null);
+            e.printStackTrace(); // never throws
+            return null;
         }
     }
 
@@ -58,7 +59,7 @@ public class ReceiveManager {
                 channel.receive(receiveBuffer);
                 receiveMess = deserialize(bufr);
                 mess = (Message) receiveMess;
-                LOGGER.info("Received message: " + "\n-----------------\n" + mess.getCommand() + "\n-----------------------");
+                LOGGER.info("Received message: " + "\n-----------------------\n" + mess.getCommand() + "\n-----------------------");
             } else {
                 mess = (Message) receiveMess;
             }

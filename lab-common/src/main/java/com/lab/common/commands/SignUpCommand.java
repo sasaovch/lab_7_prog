@@ -19,14 +19,14 @@ public class SignUpCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         User newClient = (User) bodyCommand.getData();
         if (!userCollection.checkIn(newClient)) {
             User authentClient = userCollection.authenticate(newClient);
             if (Objects.nonNull(authentClient)) {
                 return new CommandResult("sign up", authentClient, true, "Sign up successfully.");
             }
-            return new CommandResult("sign up", authentClient, false, "Something with database went wrong.");
+            return new CommandResult("sign up", null, false, "Something with database went wrong.");
         }
         return new CommandResult("sign up", null, false, "This login is used.");
     }

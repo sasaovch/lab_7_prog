@@ -2,6 +2,7 @@ package com.lab.common.commands;
 
 import java.io.Serializable;
 
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 
@@ -16,7 +17,7 @@ public class ShowCommand extends Command {
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
+    public CommandResult run(BodyCommand bodyCommand, User client) {
         if (collectionManager.getSize() == 0) {
             return new CommandResult("show", null, true, "The collection is empty.");
         }

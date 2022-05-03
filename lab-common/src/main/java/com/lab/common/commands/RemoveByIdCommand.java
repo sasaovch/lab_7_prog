@@ -1,5 +1,6 @@
 package com.lab.common.commands;
 
+import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.CollectionManager;
 import com.lab.common.util.IOManager;
@@ -16,11 +17,11 @@ public class RemoveByIdCommand extends Command {
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, String userName) {
-        if (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(userName))))) {
-            return new CommandResult("remove_by_id", null, true, "SpaceMarine has been removed");
-        } else {
-            return new CommandResult("remove_by_id", null, false, "Uknown Id or insufficient access rights.");
+    public CommandResult run(BodyCommand bodyCommand, User client) {
+        switch (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(client.getLogin()))))) {
+            case True : return new CommandResult("remove_by_id", null, true, "SpaceMarine has been removed.");
+            case False :  return new CommandResult("remove_by_id", null, false, "Uknown Id or insufficient access rights.");
+            default :  return new CommandResult("remove_by_id", null, false, "Database broke down.");
         }
     }
 
