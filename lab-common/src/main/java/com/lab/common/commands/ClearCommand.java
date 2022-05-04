@@ -14,7 +14,7 @@ public class ClearCommand extends Command {
 
     @Override
     public CommandResult run(BodyCommand bodyCommand, User user) {
-        switch (collectionManager.clearCollection(user.getLogin())) {
+        switch (collectionManager.clearCollection(user.getUsername())) {
             case True : return new CommandResult("clear", null, true, "The collection is cleared.");
             default :  return new CommandResult("clear", null, false, "Database broke down.");
         }

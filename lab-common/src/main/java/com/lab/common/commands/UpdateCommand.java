@@ -20,7 +20,7 @@ public class UpdateCommand extends Command {
     public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
         SpaceMarine newSpaceMarine = bodyCommandWithSpMar.getSpaceMarine();
-        newSpaceMarine.setOwnerName(user.getLogin());
+        newSpaceMarine.setOwnerName(user.getUsername());
         Long id = (Long) bodyCommand.getData();
         if (collectionManager.getSize() == 0) {
             return new CommandResult("update", null, false, "There are no such element in the collection.");

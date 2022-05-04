@@ -6,11 +6,11 @@ import com.lab.common.util.BodyCommand;
 public class ExitCommand extends Command {
 
     public ExitCommand() {
-        super("exit", "exit : shut down the work", false);
+        super("exit", "exit : shut down the work", true);
     }
 
     @Override
     public CommandResult run(BodyCommand bodyCommand, User user) {
-        return new CommandResult("exit", null, true, "Good Buy, " + user.getLogin() + "!\n\\(?_?)/");
+        return new CommandResult("exit", null, true, "Good Buy, " + user.getUsername() + "!\n\\(?_?)/");
     }
 }

@@ -20,7 +20,7 @@ public class RemoveGreaterCommand extends Command {
     public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommWitSpMar = (BodyCommandWithSpMar) bodyCommand;
         switch (collectionManager.removeIf(spaceMar -> {
-            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0) && (spaceMar.getOwnerName().equals(user.getLogin()));
+            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0) && (spaceMar.getOwnerName().equals(user.getUsername()));
             })) {
             case True : return new CommandResult("remove_greater", null, true, "All items have been successfully deleted.");
             case False :  return new CommandResult("remove_greater", null, true, "No element has been deleted.");

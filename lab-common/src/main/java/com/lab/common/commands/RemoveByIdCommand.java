@@ -16,7 +16,7 @@ public class RemoveByIdCommand extends Command {
 
     @Override
     public CommandResult run(BodyCommand bodyCommand, User user) {
-        switch (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(user.getLogin()))))) {
+        switch (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(user.getUsername()))))) {
             case True : return new CommandResult("remove_by_id", null, true, "SpaceMarine has been removed.");
             case False :  return new CommandResult("remove_by_id", null, false, "Uknown Id or insufficient access rights.");
             default :  return new CommandResult("remove_by_id", null, false, "Database broke down.");

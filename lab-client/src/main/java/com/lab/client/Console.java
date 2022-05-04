@@ -8,7 +8,6 @@ import com.lab.common.commands.Command;
 import com.lab.common.commands.CommandManager;
 import com.lab.common.commands.CommandResult;
 import com.lab.common.data.User;
-import com.lab.common.util.AskerInformation;
 import com.lab.common.util.BodyCommand;
 import com.lab.common.util.IOManager;
 import com.lab.common.util.Message;
@@ -19,7 +18,6 @@ public class Console {
     private final ReceiveManager receiveManager;
     private final SendManager sendManager;
     private final CommandManager commandManager = CommandManager.getDefaultCommandManager(null, null);
-    private User user;
     private Message message;
     private boolean isWorkState = true;
 
@@ -27,6 +25,7 @@ public class Console {
         this.ioManager = ioManager;
         this.receiveManager = receiveManager;
         this.sendManager = sendManager;
+        message = new Message();
     }
 
     public void run() throws IOException {
@@ -34,7 +33,7 @@ public class Console {
         String nameCommand;
         String[] value;
         String[] commandline;
-        authenticateUser();
+        ioManager.println("Hello! Authenticate or register, please!\nEnter command 'login' or 'sign_up'");
         while (isWorkState) {
             if (!ioManager.getFileMode()) {
                 ioManager.prompt();
@@ -59,41 +58,6 @@ public class Console {
                     ioManager.printerr("Incorrect arguments in command. Enter 'help' to view correct arguments.");
                 }
             }
-        }
-    }
-
-    public void authenticateUser() throws IOException {
-        while (true) {
-            int askTypeOfAuthen = AskerInformation.askTypeOfAuthen(ioManager);
-            BodyCommand bodyCommand;
-            // ask login and password
-            if (askTypeOfAuthen == 1) {
-                bodyCommand = commandManager.getCommand("login").requestBodyCommand(null, ioManager);
-                message = new Message("login", bodyCommand);
-            } else if (askTypeOfAuthen == 2) {
-                bodyCommand = commandManager.getCommand("sign_up").requestBodyCommand(null, ioManager);
-                message = new Message("sign_up", bodyCommand);
-            } else {
-                isWorkState = false;
-                return;
-            }
-            message.setUser((User) bodyCommand.getData());
-            sendManager.sendMessage(message);
-            CommandResult commandResult = receiveManager.receiveMessage();
-            if (Objects.nonNull(commandResult)) {
-                // authentication was successful
-                if (commandResult.getResultStatus()) {
-                    user = (User) commandResult.getData();
-                    message.setUser(user);
-                    ioManager.println("Welcome, " + user.getLogin() + "!");
-                    return;
-                }
-                // authentication wasn't successful
-                ioManager.printerr(commandResult.getMessageResult());
-                continue;
-            }
-            // no response received
-            ioManager.printerr("Failed to connect server.");
         }
     }
 
@@ -136,10 +100,17 @@ public class Console {
             ioManager.println("Hmm... Something with server went wrong. Try again later.");
         } else if (Objects.isNull(result)) {
             return;
+        } else if (isAuthenCommandWithClient(result)) {
+            message.setUser((User) result.getData());
+            ioManager.println("Welcome, " + message.getUser().getUsername() + "!");
         } else if (result.getResultStatus()) {
             ioManager.println(result.getMessageResult());
         } else {
             ioManager.printerr(result.getMessageResult());
         }
+    }
+
+    private boolean isAuthenCommandWithClient(CommandResult result) {
+        return (!commandManager.getCommand(result.getCommandName()).requiresAuthen() && result.getResultStatus());
     }
 }

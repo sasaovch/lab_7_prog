@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +59,7 @@ public class SQLUserManager implements UserManagerInt {
 
     @Override
     public boolean checkIn(User user) {
-        return usersLoginSet.contains(user.getLogin());
+        return usersLoginSet.contains(user.getUsername());
     }
 
     @Override
@@ -87,8 +88,8 @@ public class SQLUserManager implements UserManagerInt {
             statUser.setString(indexPassword, hashStr);
             ResultSet resUser = statUser.executeQuery();
             resUser.next();
-            if (resUser.getString("login").equals(user.getLogin())) {
-                usersLoginSet.add(user.getLogin());
+            if (resUser.getString("login").equals(user.getUsername())) {
+                usersLoginSet.add(user.getUsername());
                 return ResultStatusWorkWithColl.True;
             }
             return ResultStatusWorkWithColl.False;
@@ -100,7 +101,7 @@ public class SQLUserManager implements UserManagerInt {
 
     public void prepareStatUser(PreparedStatement stat, User user) throws SQLException {
         int indexColumn = 1;
-        stat.setString(indexColumn++, user.getLogin());
+        stat.setString(indexColumn++, user.getUsername());
         stat.setString(indexColumn++, user.getPassword());
         stat.setString(indexColumn, user.getSalt());
     }
@@ -108,9 +109,12 @@ public class SQLUserManager implements UserManagerInt {
     @Override
     public ResultStatusWorkWithColl authenticate(User user) {
         final String findUserQuery = "SELECT * FROM users WHERE login = ?";
-        if (usersLoginSet.contains(user.getLogin())) {
+        if (Objects.isNull(user)) {
+            return ResultStatusWorkWithColl.False;
+        }
+        if (usersLoginSet.contains(user.getUsername())) {
             try (PreparedStatement statement = connectionDB.prepareStatement(findUserQuery)) {
-                statement.setString(1, user.getLogin());
+                statement.setString(1, user.getUsername());
                 ResultSet res = statement.executeQuery();
                 res.next();
                 String realPasswordHashed = res.getString("password");

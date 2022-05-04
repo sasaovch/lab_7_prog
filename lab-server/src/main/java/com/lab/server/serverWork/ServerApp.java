@@ -96,9 +96,9 @@ public class ServerApp {
             switch (authentication) {
                 case True : result = command.run(data, mess.getUser());
                             break;
-                case False : result = new CommandResult("error", null, false, "User verification failed.");
+                case False : result = new CommandResult(command.getName(), null, false, "User verification failed.");
                             break;
-                default : result = new CommandResult("error", null, false, "Database broke down.");
+                default : result = new CommandResult(command.getName(), null, false, "Database broke down.");
             }
         } else {
             result = command.run(data, mess.getUser());
@@ -136,10 +136,8 @@ public class ServerApp {
             try {
                 CommandResult commandResult = hanbleMessExecutorService.submit(() -> execute(mess)).get();
                 Boolean sendResult = sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult)).get();
-                if (!sendResult) {
-                    LOGGER.error("Failed to send message.");
-                } else {
-                    LOGGER.info("Sent message to " + mess.getUser().getLogin());
+                if (sendResult) {
+                   LOGGER.info("Sent message \n-----------------------\n" +  commandResult.getMessageResult() + "\n-----------------------");
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("This thread was damaged.", e);

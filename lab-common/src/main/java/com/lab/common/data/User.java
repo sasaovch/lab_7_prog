@@ -17,11 +17,11 @@ public class User implements Serializable {
     public User() {
     }
 
-    public String getLogin() {
+    public String getUsername() {
         return username;
     }
 
-    public void setLogin(String setUserName) {
+    public void setUsername(String setUserName) {
         this.username = setUserName;
     }
 

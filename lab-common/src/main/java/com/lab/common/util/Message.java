@@ -10,6 +10,9 @@ public class Message implements Serializable {
     private String nameCommand;
     private BodyCommand bodyCommand;
 
+    public Message() {
+    }
+
     public Message(String command, BodyCommand bodyCommand) {
         this.nameCommand = command;
         this.bodyCommand = bodyCommand;

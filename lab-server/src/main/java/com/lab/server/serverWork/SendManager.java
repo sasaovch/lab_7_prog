@@ -42,7 +42,6 @@ public class SendManager {
             while (channel.send(sendBufferSize, client) < sendSize) {
                 limit -= 1;
                 if (limit == 0) {
-                    LOGGER.error("Server couldn't send message.");
                     return false;
                 }
             }
@@ -53,12 +52,10 @@ public class SendManager {
             while (channel.send(sendBuffer, client) < sendSize) {
                 limit -= 1;
                 if (limit == 0) {
-                    LOGGER.error("Server couldn't send message.");
                     return false;
                 }
             }
             sendBuffer.clear();
-            LOGGER.info("Send result of command to client: " + "\n-----------------------\n" +  result.getMessageResult() + "\n-----------------------");
             return true;
         } catch (IOException e) {
             LOGGER.error("Server couldn't send message.", e);

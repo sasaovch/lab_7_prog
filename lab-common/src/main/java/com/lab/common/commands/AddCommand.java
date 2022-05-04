@@ -19,7 +19,7 @@ public class AddCommand extends Command {
     @Override
     public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
-        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(user.getLogin());
+        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(user.getUsername());
         switch (collectionManager.addElement(bodyCommandWithSpMar.getSpaceMarine())) {
             case True : return new CommandResult("add", null, true,
                                                     bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added.");

@@ -6,11 +6,11 @@ public class CommandResult implements Serializable {
     private static final long serialVersionUID = 8711472321987691021L;
     private Serializable data;
     private Boolean resultStatus;
-    private String name;
+    private String commandName;
     private String messageResult;
 
-    public CommandResult(String name, Serializable data, Boolean resultStatus, String messageResult) {
-        this.setName(name);
+    public CommandResult(String commandName, Serializable data, Boolean resultStatus, String messageResult) {
+        this.setCommandName(commandName);
         this.setData(data);
         this.setResultStatus(resultStatus);
         this.setMessageResult(messageResult);
@@ -32,12 +32,12 @@ public class CommandResult implements Serializable {
         this.data = data;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCommandName(String commandName) {
+        this.commandName = commandName;
     }
 
-    public String getName() {
-        return name;
+    public String getCommandName() {
+        return commandName;
     }
 
     public String getMessageResult() {
