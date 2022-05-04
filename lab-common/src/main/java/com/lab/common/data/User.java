@@ -21,8 +21,8 @@ public class User implements Serializable {
         return username;
     }
 
-    public void setLogin(String username) {
-        this.username = username;
+    public void setLogin(String setUserName) {
+        this.username = setUserName;
     }
 
     public String getPassword() {

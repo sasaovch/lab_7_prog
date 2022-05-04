@@ -8,7 +8,7 @@ import com.lab.common.util.IOManager;
 public class ExecuteScriptCommand extends Command {
 
     public ExecuteScriptCommand() {
-        super("execute_script" ,"execute_script file_name : execute script");
+        super("execute_script", "execute_script file_name : execute script");
     }
 
     @Override

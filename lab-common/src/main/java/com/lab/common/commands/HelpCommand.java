@@ -17,9 +17,9 @@ public class HelpCommand extends Command {
     @Override
     public CommandResult run(BodyCommand bodyCommand, User user) {
         StringBuilder result = new StringBuilder();
-        for(Entry<String, Command> entryComm : commandManager.getMap().entrySet()) {
+        for (Entry<String, Command> entryComm : commandManager.getMap().entrySet()) {
             result.append(entryComm.getValue().getDescription() + "\n");
         }
-        return new CommandResult("help" , null, true, result.toString());
+        return new CommandResult("help", null, true, result.toString());
     }
 }
