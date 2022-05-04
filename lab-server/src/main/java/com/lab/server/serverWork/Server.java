@@ -42,14 +42,10 @@ public final class Server {
                     return defaultVar;
                 }
             });
-            // String dataBaseHost = ParsFromEV.getFromEV("dbhost", "pg", (stringHost, defaultValue) -> stringHost);
-            // String dataBaseTable = ParsFromEV.getFromEV("dbtable", "studs", (stringTable, defaultValue) -> stringTable);
-            // String dataBaseUser = ParsFromEV.getFromEV("dbuser", "s336768", (stringUser, defaultValue) -> stringUser);
-            // String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "ccw507", (stringPassword, defaultValue) -> stringPassword);
-            String dataBaseHost = ParsFromEV.getFromEV("dbhost", "localhost", (stringHost, defaultValue) -> stringHost);
-            String dataBaseTable = ParsFromEV.getFromEV("dbtable", "lab", (stringTable, defaultValue) -> stringTable);
-            String dataBaseUser = ParsFromEV.getFromEV("dbuser", "postgres", (stringUser, defaultValue) -> stringUser);
-            String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "87740432164", (stringPassword, defaultValue) -> stringPassword);
+            String dataBaseHost = ParsFromEV.getFromEV("dbhost", "", (stringHost, defaultValue) -> stringHost);
+            String dataBaseTable = ParsFromEV.getFromEV("dbtable", "", (stringTable, defaultValue) -> stringTable);
+            String dataBaseUser = ParsFromEV.getFromEV("dbuser", "", (stringUser, defaultValue) -> stringUser);
+            String dataBasePassword = ParsFromEV.getFromEV("dbpassword", "", (stringPassword, defaultValue) -> stringPassword);
             try (Connection connectionDB = DriverManager.getConnection("jdbc:postgresql://" + dataBaseHost + '/' + dataBaseTable, dataBaseUser, dataBasePassword)) {
                     ServerApp app = new ServerApp(address, port, connectionDB, numberOfTreads);
                     app.start();
