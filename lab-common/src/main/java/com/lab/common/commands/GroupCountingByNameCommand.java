@@ -11,16 +11,14 @@ import com.lab.common.util.CollectionManager;
 public class GroupCountingByNameCommand extends Command {
     private CollectionManager collectionManager;
 
-    public GroupCountingByNameCommand() {
-    }
-
     public GroupCountingByNameCommand(CollectionManager collection) {
+        super("group_counting_by_name", "group_counting_by_name : groups the elements of the collection by the value of the name field");
         collectionManager = collection;
     }
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
             if (collectionManager.getSize() == 0) {
                 return new CommandResult("group_counting_by_name", null, true, "The collection is empty.");
             }

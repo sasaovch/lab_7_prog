@@ -11,18 +11,16 @@ import com.lab.common.util.IOManager;
 public class UpdateCommand extends Command {
     private CollectionManager collectionManager;
 
-    public UpdateCommand() {
-    }
-
     public UpdateCommand(CollectionManager collection) {
+        super("update", "update id {element} : update element info by it's id");
         collectionManager = collection;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
         SpaceMarine newSpaceMarine = bodyCommandWithSpMar.getSpaceMarine();
-        newSpaceMarine.setOwnerName(client.getLogin());
+        newSpaceMarine.setOwnerName(user.getLogin());
         Long id = (Long) bodyCommand.getData();
         if (collectionManager.getSize() == 0) {
             return new CommandResult("update", null, false, "There are no such element in the collection.");

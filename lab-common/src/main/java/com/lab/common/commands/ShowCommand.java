@@ -9,15 +9,13 @@ import com.lab.common.util.CollectionManager;
 public class ShowCommand extends Command {
     private CollectionManager collectionManager;
 
-    public ShowCommand() {
-    }
-
     public ShowCommand(CollectionManager collection) {
+        super("show", "show : print all elements of collection");
         collectionManager = collection;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         if (collectionManager.getSize() == 0) {
             return new CommandResult("show", null, true, "The collection is empty.");
         }

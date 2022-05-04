@@ -10,19 +10,17 @@ import com.lab.common.util.IOManager;
 public class RemoveGreaterCommand extends Command {
     private CollectionManager collectionManager;
 
-    public RemoveGreaterCommand() {
-    }
-
     public RemoveGreaterCommand(CollectionManager collection) {
+        super("remove_greater", "remove_greater {element} : remove all items from collection that exceed the specified");
         collectionManager = collection;
     }
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommWitSpMar = (BodyCommandWithSpMar) bodyCommand;
         switch (collectionManager.removeIf(spaceMar -> {
-            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0) && (spaceMar.getOwnerName().equals(client.getLogin()));
+            return (spaceMar.compareTo(bodyCommWitSpMar.getSpaceMarine()) > 0) && (spaceMar.getOwnerName().equals(user.getLogin()));
             })) {
             case True : return new CommandResult("remove_greater", null, true, "All items have been successfully deleted.");
             case False :  return new CommandResult("remove_greater", null, true, "No element has been deleted.");

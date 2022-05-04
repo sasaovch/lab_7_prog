@@ -1,30 +1,25 @@
 package com.lab.common.commands;
 
+import java.util.Map.Entry;
+
 import com.lab.common.data.User;
 import com.lab.common.util.BodyCommand;
 
 
 public class HelpCommand extends Command {
+    private CommandManager commandManager;
 
-    public HelpCommand() {
+    public HelpCommand(CommandManager commandManager) {
+        super("help", "help : print info about all commands");
+        this.commandManager = commandManager;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
-        return new CommandResult("help", null, true, "help : print info about all commands\n"
-        + "info : print info about collection: type, initialization date, number of elements\n"
-        + "show : print all elements of collection\n"
-        + "add {element} : add new element in collection\n"
-        + "add_if_min {element} : add element if its value is less than minimal value in collection (value is health)\n"
-        + "update id {element} : update element info by it's id\n"
-        + "remove_by_id id : delete element by it's id\n"
-        + "clear : clear the collection\n"
-        + "count_by_loyal loyal : print the number of elements whose value of the loyal field is equal to the specified\n"
-        + "execute_script file_name : execute script\n"
-        + "exit : finish work of client\n"
-        + "group_counting_by_name : groups the elements of the collection by the value of the name field\n"
-        + "remove_greater {element} : remove all items from collection that exceed the specified\n"
-        + "remove_lower {element} : remove all items smaller than the specified one from the collection\n"
-        + "print_descending : print all the elements of the collection in descending order");
+    public CommandResult run(BodyCommand bodyCommand, User user) {
+        StringBuilder result = new StringBuilder();
+        for(Entry<String, Command> entryComm : commandManager.getMap().entrySet()) {
+            result.append(entryComm.getValue().getDescription() + "\n");
+        }
+        return new CommandResult("help" , null, true, result.toString());
     }
 }

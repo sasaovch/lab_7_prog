@@ -9,15 +9,13 @@ import com.lab.common.util.IOManager;
 public class CountByLoyalCommand extends Command {
     private CollectionManager collectionManager;
 
-    public CountByLoyalCommand() {
-    }
-
     public CountByLoyalCommand(CollectionManager collection) {
+        super("count_by_loyal", "count_by_loyal loyal : print the number of elements whose value of the loyal field is equal to the specified");
         collectionManager = collection;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         Integer count = collectionManager.countBySomeThing(SpaceMarine::getLoyal, (Boolean) bodyCommand.getData());
         return new CommandResult("count_by_loyal", count, true, "Count by loyal - " + (Boolean) bodyCommand.getData() + ": " + count);
     }

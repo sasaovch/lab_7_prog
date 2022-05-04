@@ -57,20 +57,20 @@ public class SQLUserManager implements UserManagerInt {
     }
 
     @Override
-    public boolean checkIn(User client) {
-        return usersLoginSet.contains(client.getLogin());
+    public boolean checkIn(User user) {
+        return usersLoginSet.contains(user.getLogin());
     }
 
     @Override
-    public User authenticate(User client) {
-        if (addElement(client).equals(ResultStatusWorkWithColl.True)) {
-            client.setAuntificationStatusTrue();
-            return client;
+    public User register(User user) {
+        if (addElement(user).equals(ResultStatusWorkWithColl.True)) {
+            user.setAuntificationStatusTrue();
+            return user;
         }
         return null;
     }
 
-    public ResultStatusWorkWithColl addElement(User client) {
+    public ResultStatusWorkWithColl addElement(User user) {
         final int saltBytes = 7;
         final int indexPassword = 2;
         String insertUser = "INSERT INTO users VALUES ("
@@ -80,15 +80,15 @@ public class SQLUserManager implements UserManagerInt {
         byte[] salt = new byte[saltBytes];
         random.nextBytes(salt);
         String saltStr = encoder.encodeToString(salt);
-        String hashStr = encodeHashWithSalt(client.getPassword(), saltStr);
-        client.setSalt(saltStr);
+        String hashStr = encodeHashWithSalt(user.getPassword(), saltStr);
+        user.setSalt(saltStr);
         try (PreparedStatement statUser = connectionDB.prepareStatement(insertUser)) {
-            prepareStatUser(statUser, client);
+            prepareStatUser(statUser, user);
             statUser.setString(indexPassword, hashStr);
             ResultSet resUser = statUser.executeQuery();
             resUser.next();
-            if (resUser.getString("login").equals(client.getLogin())) {
-                usersLoginSet.add(client.getLogin());
+            if (resUser.getString("login").equals(user.getLogin())) {
+                usersLoginSet.add(user.getLogin());
                 return ResultStatusWorkWithColl.True;
             }
             return ResultStatusWorkWithColl.False;
@@ -98,23 +98,23 @@ public class SQLUserManager implements UserManagerInt {
         }
     }
 
-    public void prepareStatUser(PreparedStatement stat, User client) throws SQLException {
+    public void prepareStatUser(PreparedStatement stat, User user) throws SQLException {
         int indexColumn = 1;
-        stat.setString(indexColumn++, client.getLogin());
-        stat.setString(indexColumn++, client.getPassword());
-        stat.setString(indexColumn, client.getSalt());
+        stat.setString(indexColumn++, user.getLogin());
+        stat.setString(indexColumn++, user.getPassword());
+        stat.setString(indexColumn, user.getSalt());
     }
 
     @Override
-    public ResultStatusWorkWithColl login(User client) {
+    public ResultStatusWorkWithColl authenticate(User user) {
         final String findUserQuery = "SELECT * FROM users WHERE login = ?";
-        if (usersLoginSet.contains(client.getLogin())) {
+        if (usersLoginSet.contains(user.getLogin())) {
             try (PreparedStatement statement = connectionDB.prepareStatement(findUserQuery)) {
-                statement.setString(1, client.getLogin());
+                statement.setString(1, user.getLogin());
                 ResultSet res = statement.executeQuery();
                 res.next();
                 String realPasswordHashed = res.getString("password");
-                String passwordHashed = encodeHashWithSalt(client.getPassword(), res.getString("salt"));
+                String passwordHashed = encodeHashWithSalt(user.getPassword(), res.getString("salt"));
                 if (passwordHashed.equals(realPasswordHashed)) {
                     return ResultStatusWorkWithColl.True;
                 }

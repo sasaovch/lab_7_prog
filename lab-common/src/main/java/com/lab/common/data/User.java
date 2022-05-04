@@ -4,13 +4,13 @@ import java.io.Serializable;
 
 public class User implements Serializable {
     private static final long serialVersionUID = 6813517110395654951L;
-    private String login;
+    private String username;
     private String password;
     private String salt;
     private boolean authenticationStatus = false;
 
-    public User(String login, String password) {
-        this.login = login;
+    public User(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
@@ -18,11 +18,11 @@ public class User implements Serializable {
     }
 
     public String getLogin() {
-        return login;
+        return username;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setLogin(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -55,6 +55,6 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return login;
+        return username;
     }
 }

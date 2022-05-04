@@ -14,12 +14,12 @@ FOREIGN KEY(coordinates) REFERENCES coordinates(id),
 FOREIGN KEY(chapter) REFERENCES chapter(id),
 FOREIGN KEY(owner_name) REFERENCES users(login));
 
-CREATE TYPE AstartesCategory AS ENUM (
-'AGGRESSOR',
-'INCEPTOR',
-'TACTICAL',
-'CHAPLAIN',
-'HELIX');
+CREATE TYPE astartes_category AS ENUM (
+'aggressor',
+'inceptor',
+'tactical',
+'chaplain',
+'helix');
 
 CREATE TABLE Coordinates (
 id SERIAL PRIMARY KEY,

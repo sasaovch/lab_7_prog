@@ -91,22 +91,17 @@ public class ServerApp {
         Command command = commands.getMap().get(mess.getCommand());
         BodyCommand data = mess.getBodyCommand();
         CommandResult result;
-        if (mess.getCommand().equals("sign up")) {
-            result = command.run(data, mess.getClient());
-        } else if (mess.getCommand().equals("log in")) {
-            result = command.run(data, mess.getClient());
-        } else if (mess.getCommand().equals("exit")) {
-            LOGGER.info("Client - " + mess.getClient() + " disconnected.");
-            result = command.run(data, mess.getClient());
-        } else {
-            ResultStatusWorkWithColl authentication = userManager.login(mess.getClient());
+        if (command.requiresAuthen()) {
+            ResultStatusWorkWithColl authentication = userManager.authenticate(mess.getUser());
             switch (authentication) {
-                case True : result = command.run(data, mess.getClient());
+                case True : result = command.run(data, mess.getUser());
                             break;
                 case False : result = new CommandResult("error", null, false, "User verification failed.");
                             break;
                 default : result = new CommandResult("error", null, false, "Database broke down.");
             }
+        } else {
+            result = command.run(data, mess.getUser());
         }
         return result;
     }
@@ -144,7 +139,7 @@ public class ServerApp {
                 if (!sendResult) {
                     LOGGER.error("Failed to send message.");
                 } else {
-                    LOGGER.info("Sent message to " + mess.getClient().getLogin());
+                    LOGGER.info("Sent message to " + mess.getUser().getLogin());
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("This thread was damaged.", e);

@@ -11,16 +11,14 @@ import com.lab.common.util.CollectionManager;
 public class PrintDescendingCommand extends Command {
     private CollectionManager collectionManager;
 
-    public PrintDescendingCommand() {
-    }
-
     public PrintDescendingCommand(CollectionManager collection) {
+        super("print_descending", "print_descending : print all the elements of the collection in descending order");
         collectionManager = collection;
     }
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         if (collectionManager.getSize() == 0) {
             return new CommandResult("print_descending", null, true, "The collection is empty.");
         }

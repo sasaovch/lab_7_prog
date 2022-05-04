@@ -12,25 +12,23 @@ public class LogInCommand extends Command {
     private UserManagerInt userCollection;
 
     public LogInCommand(UserManagerInt userColl) {
+        super("login", "login {user} : authenticate user", false);
         userCollection = userColl;
     }
 
-    public LogInCommand() {
-    }
-
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         User newClient = (User) bodyCommand.getData();
         if (userCollection.checkIn(newClient)) {
-            switch (userCollection.login(newClient)) {
+            switch (userCollection.authenticate(newClient)) {
                 case True : newClient.setAuntificationStatusTrue();
-                            return new CommandResult("log in", newClient, true, "Login successfully.");
-                case False : return new CommandResult("log in", null, false, "Failed to log in.");
+                            return new CommandResult("login", newClient, true, "Authentication completed successfully.");
+                case False : return new CommandResult("login", null, false, "Authentication failed.");
                 default :
-                    return new CommandResult("log in", null, false, "Database broke down.");
+                    return new CommandResult("login", null, false, "Database broke down.");
             }
         }
-        return new CommandResult("log in", null, false, "Unknown login. Enter another or sign up.");
+        return new CommandResult("login", null, false, "Unknown username. Enter another or sign up.");
     }
 
     @Override
@@ -51,8 +49,8 @@ public class LogInCommand extends Command {
             if ("".equals(password.trim())) {
                 continue;
             }
-            User client = new User(username.trim(), password);
-            return new BodyCommand(client);
+            User user = new User(username.trim(), password);
+            return new BodyCommand(user);
         }
     }
 }

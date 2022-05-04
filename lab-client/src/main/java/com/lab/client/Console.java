@@ -19,7 +19,7 @@ public class Console {
     private final ReceiveManager receiveManager;
     private final SendManager sendManager;
     private final CommandManager commandManager = CommandManager.getDefaultCommandManager(null, null);
-    private User client;
+    private User user;
     private Message message;
     private boolean isWorkState = true;
 
@@ -34,7 +34,7 @@ public class Console {
         String nameCommand;
         String[] value;
         String[] commandline;
-        authenticateClient();
+        authenticateUser();
         while (isWorkState) {
             if (!ioManager.getFileMode()) {
                 ioManager.prompt();
@@ -62,30 +62,30 @@ public class Console {
         }
     }
 
-    public void authenticateClient() throws IOException {
+    public void authenticateUser() throws IOException {
         while (true) {
             int askTypeOfAuthen = AskerInformation.askTypeOfAuthen(ioManager);
             BodyCommand bodyCommand;
             // ask login and password
             if (askTypeOfAuthen == 1) {
-                bodyCommand = commandManager.getCommand("log in").requestBodyCommand(null, ioManager);
-                message = new Message("log in", bodyCommand);
+                bodyCommand = commandManager.getCommand("login").requestBodyCommand(null, ioManager);
+                message = new Message("login", bodyCommand);
             } else if (askTypeOfAuthen == 2) {
-                bodyCommand = commandManager.getCommand("sign up").requestBodyCommand(null, ioManager);
-                message = new Message("sign up", bodyCommand);
+                bodyCommand = commandManager.getCommand("sign_up").requestBodyCommand(null, ioManager);
+                message = new Message("sign_up", bodyCommand);
             } else {
                 isWorkState = false;
                 return;
             }
-            message.setClient((User) bodyCommand.getData());
+            message.setUser((User) bodyCommand.getData());
             sendManager.sendMessage(message);
             CommandResult commandResult = receiveManager.receiveMessage();
             if (Objects.nonNull(commandResult)) {
                 // authentication was successful
                 if (commandResult.getResultStatus()) {
-                    client = (User) commandResult.getData();
-                    message.setClient(client);
-                    ioManager.println("Welcome, " + client.getLogin() + "!");
+                    user = (User) commandResult.getData();
+                    message.setUser(user);
+                    ioManager.println("Welcome, " + user.getLogin() + "!");
                     return;
                 }
                 // authentication wasn't successful

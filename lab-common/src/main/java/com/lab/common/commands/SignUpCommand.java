@@ -12,23 +12,21 @@ public class SignUpCommand extends Command {
     private UserManagerInt userCollection;
 
     public SignUpCommand(UserManagerInt userColl) {
+        super("sign_up", "sign_up {user} : register new user", false);
         userCollection = userColl;
     }
 
-    public SignUpCommand() {
-    }
-
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         User newClient = (User) bodyCommand.getData();
         if (!userCollection.checkIn(newClient)) {
-            User authentClient = userCollection.authenticate(newClient);
+            User authentClient = userCollection.register(newClient);
             if (Objects.nonNull(authentClient)) {
-                return new CommandResult("sign up", authentClient, true, "Sign up successfully.");
+                return new CommandResult("sign_up", authentClient, true, "Registration completed successfully.");
             }
-            return new CommandResult("sign up", null, false, "Something with database went wrong.");
+            return new CommandResult("sign_up", null, false, "Something with database went wrong.");
         }
-        return new CommandResult("sign up", null, false, "This login is used.");
+        return new CommandResult("sign_up", null, false, "This username is used.");
     }
 
     @Override
@@ -49,8 +47,8 @@ public class SignUpCommand extends Command {
             if ("".equals(password.trim())) {
                 continue;
             }
-            User client = new User(username.trim(), password);
-            return new BodyCommand(client);
+            User user = new User(username.trim(), password);
+            return new BodyCommand(user);
         }
     }
 }

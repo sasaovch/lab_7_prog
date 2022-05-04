@@ -11,15 +11,13 @@ import com.lab.common.util.CollectionManager;
 public class InfoCommand extends Command {
     private CollectionManager collectionManager;
 
-    public InfoCommand() {
-    }
-
     public InfoCommand(CollectionManager collection) {
+        super("info", "info : print info about collection: type, initialization date, number of elements");
         collectionManager = collection;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         TreeMap<String, Object> outMap = new TreeMap<>();
         outMap.put("Initialization time", collectionManager.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         outMap.put("Number of Marines", collectionManager.getSize());

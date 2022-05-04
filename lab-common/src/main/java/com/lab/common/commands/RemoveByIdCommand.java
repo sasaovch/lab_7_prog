@@ -8,17 +8,15 @@ import com.lab.common.util.IOManager;
 public class RemoveByIdCommand extends Command {
     private CollectionManager collectionManager;
 
-    public RemoveByIdCommand() {
-    }
-
     public RemoveByIdCommand(CollectionManager collection) {
+        super("remove_by_id", "remove_by_id id : remove element by its id");
         collectionManager = collection;
     }
 
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
-        switch (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(client.getLogin()))))) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
+        switch (collectionManager.removeIf(spMar -> (spMar.getID().equals(bodyCommand.getData()) && (spMar.getOwnerName().equals(user.getLogin()))))) {
             case True : return new CommandResult("remove_by_id", null, true, "SpaceMarine has been removed.");
             case False :  return new CommandResult("remove_by_id", null, false, "Uknown Id or insufficient access rights.");
             default :  return new CommandResult("remove_by_id", null, false, "Database broke down.");

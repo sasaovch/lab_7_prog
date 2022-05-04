@@ -6,7 +6,7 @@ import com.lab.common.data.User;
 
 public class Message implements Serializable {
     private static final long serialVersionUID = 2584413675131251528L;
-    private User client;
+    private User user;
     private String nameCommand;
     private BodyCommand bodyCommand;
 
@@ -23,12 +23,12 @@ public class Message implements Serializable {
         return bodyCommand;
     }
 
-    public User getClient() {
-        return client;
+    public User getUser() {
+        return user;
     }
 
-    public void setClient(User client) {
-        this.client = client;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public void setBodyCommand(BodyCommand bodyCommand) {

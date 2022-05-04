@@ -11,17 +11,15 @@ import com.lab.common.util.IOManager;
 public class AddCommand extends Command {
     private CollectionManager collectionManager;
 
-    public AddCommand() {
-    }
-
     public AddCommand(CollectionManager collection) {
+        super("add", "add {element} : add new element in collection");
         collectionManager = collection;
     }
 
     @Override
-    public CommandResult run(BodyCommand bodyCommand, User client) {
+    public CommandResult run(BodyCommand bodyCommand, User user) {
         BodyCommandWithSpMar bodyCommandWithSpMar = (BodyCommandWithSpMar) bodyCommand;
-        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(client.getLogin());
+        bodyCommandWithSpMar.getSpaceMarine().setOwnerName(user.getLogin());
         switch (collectionManager.addElement(bodyCommandWithSpMar.getSpaceMarine())) {
             case True : return new CommandResult("add", null, true,
                                                     bodyCommandWithSpMar.getSpaceMarine().getName() + " has been added.");
