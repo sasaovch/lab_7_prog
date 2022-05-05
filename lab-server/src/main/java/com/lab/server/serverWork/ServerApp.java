@@ -14,6 +14,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,23 +126,28 @@ public class ServerApp {
 
     private class ClientThread {
         private final Message mess;
-        private final SendManager sendManager;
+        private final Callback callback;
 
         ClientThread(Message mess, SendManager sendManager) {
             this.mess = mess;
-            this.sendManager = sendManager;
+            callback = new Callback() {
+                public void callback(CommandResult commandResult) {
+                    Future<Boolean> sendResult = sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult));
+                    try {
+                        if (sendResult.get()) {
+                            LOGGER.info("Sent message to client.");
+                        } else {
+                            LOGGER.info("Didn't send message to client.");
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        LOGGER.error("Something with process of sending message went wrong.", e);
+                    }
+                }
+            };
         }
 
         private void start() {
-            try {
-                CommandResult commandResult = hanbleMessExecutorService.submit(() -> execute(mess)).get();
-                Boolean sendResult = sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult)).get();
-                if (sendResult) {
-                   LOGGER.info("Sent message \n-----------------------\n" +  commandResult.getMessageResult() + "\n-----------------------");
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("This thread was damaged.", e);
-            }
+            hanbleMessExecutorService.submit(() -> callback.callback(execute(mess)));
         }
     }
 }

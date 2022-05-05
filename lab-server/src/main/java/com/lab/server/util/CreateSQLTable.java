@@ -29,7 +29,7 @@ public final class CreateSQLTable {
     }
 
     static void createChapterTable(Connection connectionDB) throws SQLException {
-        final String createTableQuery = "CREATE TABLE IF NOT EXISTS Chapter ("
+        final String createTableQuery = "CREATE TABLE IF NOT EXISTS chapter ("
                                         + " id SERIAL PRIMARY KEY,"
                                         + " name VARCHAR(50),"
                                         + " parent_Legion VARCHAR(50),"
