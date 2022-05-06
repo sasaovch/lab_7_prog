@@ -11,10 +11,8 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +39,8 @@ public class ServerApp {
     private DatagramChannel channel;
     private boolean isWorkState;
     private ReceiveManager receiveManager;
-    private ExecutorService hanbleMessExecutorService;
-    private ExecutorService sendCommandRExecutorService;
+    private ThreadPoolExecutor handleMessExecutorService;
+    private ThreadPoolExecutor sendCommandRExecutorService;
 
     public ServerApp(InetAddress addr, int port, Connection connDB, int numberOfTreads) throws SQLException {
         this.address = new InetSocketAddress(addr, port);
@@ -50,8 +48,8 @@ public class ServerApp {
         userManager = new SQLUserManager(connectionDB);
         sqlSpMarCollManager = new SQLSpMarCollManager(connectionDB);
         commands = CommandManager.getDefaultCommandManager(sqlSpMarCollManager, userManager);
-        hanbleMessExecutorService = Executors.newFixedThreadPool(numberOfTreads);
-        sendCommandRExecutorService = Executors.newFixedThreadPool(numberOfTreads);
+        handleMessExecutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfTreads);
+        sendCommandRExecutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfTreads);
     }
 
     {
@@ -117,7 +115,7 @@ public class ServerApp {
             }
             if ("exit".equals(line)) {
                 LOGGER.info("Server finished working.");
-                hanbleMessExecutorService.shutdown();
+                handleMessExecutorService.shutdown();
                 sendCommandRExecutorService.shutdown();
                 isWorkState = false;
             }
@@ -126,28 +124,18 @@ public class ServerApp {
 
     private class ClientThread {
         private final Message mess;
-        private final Callback callback;
+        private final SendManager sendManager;
 
         ClientThread(Message mess, SendManager sendManager) {
             this.mess = mess;
-            callback = new Callback() {
-                public void callback(CommandResult commandResult) {
-                    Future<Boolean> sendResult = sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult));
-                    try {
-                        if (sendResult.get()) {
-                            LOGGER.info("Sent message to client.");
-                        } else {
-                            LOGGER.info("Didn't send message to client.");
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        LOGGER.error("Something with process of sending message went wrong.", e);
-                    }
-                }
-            };
+            this.sendManager = sendManager;
         }
 
         private void start() {
-            hanbleMessExecutorService.submit(() -> callback.callback(execute(mess)));
+            handleMessExecutorService.submit(() -> {
+                CommandResult commandResult = execute(mess);
+                sendCommandRExecutorService.submit(() -> sendManager.sendCommResult(commandResult));
+            });
         }
     }
 }
