@@ -19,7 +19,7 @@
         },
         {
             "type": "java",
-            "name": "Launch App",
+            "name": "Launch Client",
             "request": "launch",
             "mainClass": "com.lab.client.Client",
             "projectName": "lab-client"
@@ -35,7 +35,7 @@
     "compounds": [
         {
             "name": "Compound",
-            "configurations": ["Launch App", "Launch Server"]
+            "configurations": ["Launch Client", "Launch Server", "Launch Client"]
         }
     ]
 }

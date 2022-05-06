@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,10 +28,12 @@ public class SQLUserManager implements UserManagerInt {
     private static final Logger LOGGER = LoggerFactory.getLogger(SQLUserManager.class);
     private static final String PEPPER = "^kiU)#320%,";
     private Collection<String> usersLoginSet;
+    private Set<String> onlineUser;
     private final Connection connectionDB;
 
     public SQLUserManager(Connection connectionDB) throws SQLException {
         this.connectionDB = connectionDB;
+        onlineUser = new HashSet<>();
         CreateSQLTable.createUserTable(connectionDB);
         deSerialize();
     }
@@ -90,6 +93,7 @@ public class SQLUserManager implements UserManagerInt {
             resUser.next();
             if (resUser.getString("login").equals(user.getUsername())) {
                 usersLoginSet.add(user.getUsername());
+                onlineUser.add(user.getUsername());
                 return ResultStatusWorkWithColl.True;
             }
             return ResultStatusWorkWithColl.False;
@@ -112,7 +116,7 @@ public class SQLUserManager implements UserManagerInt {
         if (Objects.isNull(user)) {
             return ResultStatusWorkWithColl.False;
         }
-        if (usersLoginSet.contains(user.getUsername())) {
+        if (usersLoginSet.contains(user.getUsername()) && !onlineUser.contains(user.getUsername())) {
             try (PreparedStatement statement = connectionDB.prepareStatement(findUserQuery)) {
                 statement.setString(1, user.getUsername());
                 ResultSet res = statement.executeQuery();
@@ -120,6 +124,7 @@ public class SQLUserManager implements UserManagerInt {
                 String realPasswordHashed = res.getString("password");
                 String passwordHashed = encodeHashWithSalt(user.getPassword(), res.getString("salt"));
                 if (passwordHashed.equals(realPasswordHashed)) {
+                    onlineUser.add(user.getUsername());
                     return ResultStatusWorkWithColl.True;
                 }
             } catch (SQLException e) {
