@@ -1,5 +1,5 @@
 # lab_7_prog
-## IVT - 2 sem - 2022
+## ITMO - IVT - 2 sem - 2022
 ### Var - 3233
 
 Доработать программу из  [лабораторной работы №6](https://github.com/sasaovch/lab_6_prog)  следующим образом:
